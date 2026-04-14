@@ -1,3 +1,4 @@
+import { IApiBaseResponse } from '@/common/response/response.interface';
 import {
   Body,
   Controller,
@@ -8,17 +9,15 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-import { PostService } from '../services/post.service';
-import { PostCreateDto, PostGetDto } from '../dtos/request';
-import { PostCreateResponseDto } from '../dtos/reponse';
-import { IApiBaseResponse } from '@/common/response/response.interface';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { PublicRoute } from '@/common/guard/decorator/guard.public.decorator';
+import { PostCreateResponseDto } from '../dtos/reponse';
+import { PostCreateDto, PostGetDto } from '../dtos/request';
+import { PostService } from '../services/post.service';
 
 @ApiTags('POST')
 @Controller('/posts')
@@ -30,7 +29,6 @@ export class PostPublicController {
     return this.postService.getPost(postId);
   }
 
-  @PublicRoute()
   @Get()
   public getPosts(@Query() params: PostGetDto) {
     return this.postService.getAllRepo(params);

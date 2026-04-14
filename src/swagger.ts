@@ -54,7 +54,7 @@ export default function setupSwagger(app: INestApplication) {
     swaggerOptions: {
       docExpansion: 'none',
       persistAuthorization: true,
-      displayOperationId: true,
+      displayOperationId: false,
       operationsSorter: 'method',
       tagsSorter: 'alpha',
       tryItOutEnabled: true,

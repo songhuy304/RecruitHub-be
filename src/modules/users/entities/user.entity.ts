@@ -10,10 +10,10 @@ export class UserEntity extends BaseEntity {
   @Column({ unique: true })
   userName: string;
 
-  @Column()
+  @Column({ unique: true })
   email: string;
 
-  @Column({ select: false })
+  @Column()
   password: string;
 
   @Column()
@@ -21,6 +21,9 @@ export class UserEntity extends BaseEntity {
 
   @Column({ default: false })
   isVerified: boolean;
+
+  @Column({ nullable: true })
+  refreshToken: string;
 
   @Column({
     type: 'enum',

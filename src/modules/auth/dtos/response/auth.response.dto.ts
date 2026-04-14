@@ -21,5 +21,6 @@ export class TokenDto {
 }
 
 export class LoginResponseDto extends TokenDto {}
+export class SignupResponseDto extends TokenDto {}
 
 export class AuthRefreshResponseDto extends TokenDto {}

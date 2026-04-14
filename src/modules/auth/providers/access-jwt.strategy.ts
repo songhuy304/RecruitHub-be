@@ -21,7 +21,7 @@ export class JwtAccessStrategy extends PassportStrategy(
     });
   }
 
-  validate(payload: Record<string, unknown>): Record<string, unknown> {
+  async validate(payload: Record<string, string | number>) {
     return payload;
   }
 }

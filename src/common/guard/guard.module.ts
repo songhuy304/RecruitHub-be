@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { Exemple } from './example.guard';
+import { JwtAccessGuard } from './jwt.access.guard';
 
 @Module({
   providers: [
-    Exemple,
+    JwtAccessGuard,
     {
       provide: APP_GUARD,
-      useClass: Exemple,
+      useClass: JwtAccessGuard,
     },
   ],
 })

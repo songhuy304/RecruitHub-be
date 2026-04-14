@@ -1,8 +1,14 @@
 import { IAuthUser } from '@/common/request/interfaces';
-import { LoginDto } from '../dtos/request';
+import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
+import { LoginDto, SignupDto } from '../dtos/request';
 import { AuthRefreshResponseDto, LoginResponseDto } from '../dtos/response';
 
 export interface IAuthService {
-  login(payload: LoginDto): Promise<LoginResponseDto>;
-  refreshTokens(payload: IAuthUser): Promise<AuthRefreshResponseDto>;
+  login(payload: LoginDto): Promise<ApiResponseDto<LoginResponseDto>>;
+  signup(payload: SignupDto): Promise<ApiGenericResponseDto>;
+  refreshTokens(
+    payload: IAuthUser,
+    refreshToken: string,
+  ): Promise<AuthRefreshResponseDto>;
+  logout(payload: IAuthUser): Promise<ApiGenericResponseDto>;
 }
