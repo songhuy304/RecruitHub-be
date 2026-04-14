@@ -1,6 +1,7 @@
 import { ERROR_USER } from '@/common/constants';
 import {
   BadRequestException,
+  ForbiddenException,
   NotFoundException,
   UnauthorizedException,
 } from '@/common/filters/exception';
@@ -87,7 +88,7 @@ export class AuthService implements IAuthService {
     const user = await this.userRepository.findOneBy({ id: payload.userId });
 
     if (!user || !user.refreshToken) {
-      throw new UnauthorizedException(ERROR_USER.INVALID_CREDENTIALS);
+      throw new ForbiddenException(ERROR_USER.FORBIDDEN);
     }
 
     const isMatch = await this.helperEncryptionService.match(
@@ -99,7 +100,12 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException(ERROR_USER.INVALID_CREDENTIALS);
     }
 
-    const tokens = await this.helperEncryptionService.createJwtTokens(payload);
+    const tokenPayload: IAuthUser = {
+      userId: payload.userId,
+      role: payload.role,
+    };
+
+    const tokens = await this.helperEncryptionService.createJwtTokens(tokenPayload);
 
     const refreshHash = await this.helperEncryptionService.createHash(
       tokens.refreshToken,

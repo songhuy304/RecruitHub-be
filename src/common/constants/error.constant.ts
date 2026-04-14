@@ -3,6 +3,7 @@ export const ERROR_POST = {
 };
 
 export const ERROR_USER = {
+  FORBIDDEN: 'error.user.forbidden',
   NOT_FOUND: 'error.user.not-found',
   INVALID_CREDENTIALS: 'error.user.invalid-credentials',
   ALREADY_EXISTS: 'error.user.already-exists',
