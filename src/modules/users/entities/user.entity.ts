@@ -1,5 +1,5 @@
 import { BaseEntity } from '@/common/entities/base.entity';
-import { ERole } from '@/common/enums';
+import { EAuthProvider, ERole } from '@/common/enums';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('users')
@@ -13,8 +13,8 @@ export class UserEntity extends BaseEntity {
   @Column({ unique: true })
   email: string;
 
-  @Column()
-  password: string;
+  @Column({ nullable: true })
+  password?: string;
 
   @Column()
   fullName: string;
@@ -25,10 +25,16 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true })
   refreshToken: string;
 
+  @Column({ nullable: true })
+  avatar?: string;
+
   @Column({
     type: 'enum',
     enum: ERole,
     default: ERole.USER,
   })
   role: ERole;
+
+  @Column({ type: 'enum', enum: EAuthProvider, default: EAuthProvider.LOCAL })
+  provider: EAuthProvider;
 }

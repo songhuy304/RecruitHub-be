@@ -8,6 +8,8 @@ import { AuthService } from './services/auth.service';
 import { JwtRefreshStrategy } from './providers/refresh-jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../users/entities/user.entity';
+import { GoogleStrategy } from './providers/google.strategy';
+import { GoogleController } from './controller/google.controller';
 
 @Module({
   imports: [
@@ -16,8 +18,13 @@ import { UserEntity } from '../users/entities/user.entity';
     PassportModule,
     DatabaseModule,
   ],
-  controllers: [AuthPublicController],
-  providers: [JwtAccessStrategy, JwtRefreshStrategy, AuthService],
-  exports: [JwtAccessStrategy, JwtRefreshStrategy],
+  controllers: [AuthPublicController, GoogleController],
+  providers: [
+    JwtAccessStrategy,
+    JwtRefreshStrategy,
+    GoogleStrategy,
+    AuthService,
+  ],
+  exports: [JwtAccessStrategy, JwtRefreshStrategy, GoogleStrategy],
 })
 export class AuthModule {}

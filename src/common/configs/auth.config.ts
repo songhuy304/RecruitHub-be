@@ -11,5 +11,11 @@ export default registerAs(
       secret: process.env.AUTH_REFRESH_TOKEN_SECRET,
       tokenExp: process.env.AUTH_REFRESH_TOKEN_EXP,
     },
+
+    googleOauth: {
+      clientId: process.env.OAUTH_GOOGLE_CLIENT_ID,
+      secret: process.env.OAUTH_GOOGLE_SECRETS,
+      redirectUrl: process.env.OAUTH_GOOGLE_REDIRECT_URL,
+    },
   }),
 );
