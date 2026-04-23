@@ -35,6 +35,8 @@ $ npm run migration:generate --name=update_table
 $ npm run migration:run --name=update_table
 ```
 
+yrtz nwdl frgi xngz
+
 ## Compile and run the project
 
 ```bash
