@@ -1,4 +1,4 @@
-import { ERROR_USER } from '@/common/constants';
+import { ERROR_AUTH, ERROR_USER } from '@/common/constants';
 import {
   BadRequestException,
   ForbiddenException,
@@ -10,32 +10,37 @@ import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
 import { UserEntity } from '@/modules/users/entities/user.entity';
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { LoginDto, SignupDto, UserOauthDto } from '../dtos/request';
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  ResetPasswordDto,
+  SignupDto,
+  UserOauthDto,
+} from '../dtos/request';
 import {
   AuthRefreshResponseDto,
   LoginResponseDto,
   OauthResponseDto,
 } from '../dtos/response';
 import { IAuthService } from '../interfaces/auth.service.interface';
+import { AuthMailService } from './auth.mail.service';
+import { TokenExpiredError } from '@nestjs/jwt';
+import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 
 @Injectable()
 export class AuthService implements IAuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    private readonly userRepository: UserRepositoryImpl,
     private readonly helperEncryptionService: HelperEncryptionService,
+    private readonly authMailService: AuthMailService,
   ) {}
 
   public async login(
     data: LoginDto,
   ): Promise<ApiResponseDto<LoginResponseDto>> {
-    const user = await this.userRepository.findOneBy({
-      userName: data.userName,
-    });
+    const user = await this.userRepository.findByEmailOrUsername(data.userName);
 
     if (!user) {
       throw new NotFoundException(ERROR_USER.NOT_FOUND);
@@ -55,11 +60,7 @@ export class AuthService implements IAuthService {
       userId: user.id,
     });
 
-    const refreshHash = await this.helperEncryptionService.createHash(
-      tokens.refreshToken,
-    );
-
-    await this.userRepository.update(user.id, { refreshToken: refreshHash });
+    await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
 
     return ApiResponseDto.success(tokens);
   }
@@ -67,32 +68,94 @@ export class AuthService implements IAuthService {
   public async signup(payload: SignupDto): Promise<ApiGenericResponseDto> {
     const { email, password } = payload;
 
-    const user = await this.userRepository.findOneBy({ email });
+    const user = await this.userRepository.findByEmail(email);
 
-    if (user) throw new BadRequestException(ERROR_USER.ALREADY_EXISTS);
+    if (user) {
+      throw new BadRequestException(ERROR_USER.ALREADY_EXISTS);
+    }
 
     const hashPassword =
       await this.helperEncryptionService.createHash(password);
 
-    const newUser = this.userRepository.create({
+    await this.userRepository.create({
       ...payload,
       password: hashPassword,
     });
-    await this.userRepository.save(newUser);
 
     return ApiGenericResponseDto.success('register success');
   }
 
   public async logout(payload: IAuthUser): Promise<ApiGenericResponseDto> {
-    await this.userRepository.update(payload.userId, { refreshToken: null });
+    await this.upsertUserRefreshToken(payload.userId, null);
+
     return ApiGenericResponseDto.success();
+  }
+
+  public async forgotPassword(
+    payload: ForgotPasswordDto,
+  ): Promise<ApiGenericResponseDto> {
+    const user = await this.userRepository.findByEmail(payload.email);
+
+    if (!user) {
+      throw new NotFoundException(ERROR_USER.NOT_FOUND);
+    }
+
+    const token = await this.helperEncryptionService.createForgotPasswordToken({
+      userId: user.id,
+      role: user.role,
+    });
+
+    await this.authMailService.forgotPasswordMail(user, token);
+
+    return ApiGenericResponseDto.success(
+      'Send email to reset password successfully',
+    );
+  }
+
+  public async resetPassword(
+    payload: ResetPasswordDto,
+  ): Promise<ApiGenericResponseDto> {
+    const { token } = payload;
+
+    let userId: number;
+
+    try {
+      const jwt =
+        await this.helperEncryptionService.verifyForgotPasswordToken(token);
+
+      userId = jwt.userId;
+    } catch (error) {
+      this.logger.error(error);
+
+      if (error instanceof TokenExpiredError) {
+        throw new BadRequestException(ERROR_AUTH.TOKEN_EXPIRED);
+      }
+
+      throw new BadRequestException(ERROR_AUTH.TOKEN_INVALID);
+    }
+
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException(ERROR_USER.NOT_FOUND);
+    }
+
+    const passwordHash = await this.helperEncryptionService.createHash(
+      payload.password,
+    );
+
+    await this.userRepository.update(user.id, {
+      password: passwordHash,
+    });
+
+    return ApiGenericResponseDto.success('Reset password success');
   }
 
   public async refreshTokens(
     payload: IAuthUser,
     refreshToken: string,
   ): Promise<AuthRefreshResponseDto> {
-    const user = await this.userRepository.findOneBy({ id: payload.userId });
+    const user = await this.userRepository.findById(payload.userId);
 
     if (!user || !user.refreshToken) {
       throw new ForbiddenException(ERROR_USER.FORBIDDEN);
@@ -115,11 +178,7 @@ export class AuthService implements IAuthService {
     const tokens =
       await this.helperEncryptionService.createJwtTokens(tokenPayload);
 
-    const refreshHash = await this.helperEncryptionService.createHash(
-      tokens.refreshToken,
-    );
-
-    await this.userRepository.update(user.id, { refreshToken: refreshHash });
+    await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
 
     return tokens;
   }
@@ -127,7 +186,7 @@ export class AuthService implements IAuthService {
   public async validateOAuthLogin(
     payload: UserOauthDto,
   ): Promise<OauthResponseDto> {
-    let user = await this.userRepository.findOneBy({ email: payload.email });
+    let user = await this.userRepository.findByEmail(payload.email);
 
     if (!user) {
       user = await this.createOAuthUser(payload);
@@ -138,18 +197,14 @@ export class AuthService implements IAuthService {
       role: user.role,
     });
 
-    const refreshHash = await this.helperEncryptionService.createHash(
-      tokens.refreshToken,
-    );
-
-    await this.userRepository.update(user.id, { refreshToken: refreshHash });
+    await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
 
     return tokens;
   }
 
   private async createOAuthUser(payload: UserOauthDto): Promise<UserEntity> {
     try {
-      const newUser = this.userRepository.create({
+      return await this.userRepository.create({
         email: payload.email,
         fullName: payload.fullName,
         avatar: payload.avatar || null,
@@ -157,13 +212,23 @@ export class AuthService implements IAuthService {
         userName: payload.email,
         isVerified: true,
       });
-
-      return await this.userRepository.save(newUser);
     } catch (error) {
       this.logger.error('Error creating OAuth user', error);
+
       throw new BadRequestException(
         `Failed to create OAuth user: ${error.message}`,
       );
     }
+  }
+
+  private async upsertUserRefreshToken(
+    userId: number,
+    refreshToken: string | null,
+  ): Promise<void> {
+    const hash = await this.helperEncryptionService.createHash(refreshToken);
+
+    await this.userRepository.update(userId, {
+      refreshToken: hash,
+    });
   }
 }

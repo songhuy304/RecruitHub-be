@@ -3,7 +3,7 @@ import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
 import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { LoginDto, SignupDto } from '../dtos/request';
+import { ForgotPasswordDto, LoginDto, SignupDto } from '../dtos/request';
 import { AuthRefreshResponseDto, LoginResponseDto } from '../dtos/response';
 import { AuthService } from '../services/auth.service';
 import { AuthUser } from '@/common/guard/decorator';
@@ -38,15 +38,23 @@ export class AuthPublicController {
     return this.authService.logout(payload);
   }
 
+  @ApiBearerAuth('refreshToken')
+  @ApiOperation({ summary: 'Refresh token' })
   @Get('refresh-token')
   @PublicRoute()
   @UseGuards(JwtRefreshGuard)
-  @ApiBearerAuth('refreshToken')
-  @ApiOperation({ summary: 'Refresh token' })
   public refreshTokens(
     @AuthUser() user: IAuthUser,
     @RefreshToken() refreshToken: string,
   ): Promise<AuthRefreshResponseDto> {
     return this.authService.refreshTokens(user, refreshToken);
+  }
+
+  @PublicRoute()
+  @Post('/forgot-password')
+  public async forgotPassword(
+    @Body() payload: ForgotPasswordDto,
+  ): Promise<ApiGenericResponseDto> {
+    return this.authService.forgotPassword(payload);
   }
 }

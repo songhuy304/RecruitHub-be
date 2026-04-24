@@ -31,6 +31,9 @@ export class HelperEncryptionService implements IHelperEncryptionService {
   private readonly accessTokenExpire: string;
   private readonly refreshTokenExpire: string;
 
+  private readonly forgotPasswordSecret: string;
+  private readonly forgotPasswordExpire: string;
+
   constructor(
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
@@ -46,6 +49,13 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     );
     this.refreshTokenExpire = this.configService.getOrThrow<string>(
       'auth.refreshToken.tokenExp',
+    );
+
+    this.forgotPasswordSecret = this.configService.getOrThrow<string>(
+      'auth.forgotPassword.secret',
+    );
+    this.forgotPasswordExpire = this.configService.getOrThrow<string>(
+      'auth.forgotPassword.expires',
     );
   }
 
@@ -84,6 +94,20 @@ export class HelperEncryptionService implements IHelperEncryptionService {
       secret: this.refreshTokenSecret,
     });
   }
+
+  public async createForgotPasswordToken(payload: IAuthUser): Promise<string> {
+    return this.jwtService.signAsync(payload, {
+      secret: this.forgotPasswordSecret,
+      expiresIn: this.forgotPasswordExpire as StringValue,
+    });
+  }
+
+  public async verifyForgotPasswordToken(token: string): Promise<IAuthUser> {
+    return this.jwtService.verifyAsync<IAuthUser>(token, {
+      secret: this.forgotPasswordSecret,
+    });
+  }
+
   public createHash(password: string): Promise<string> {
     return argon2.hash(password);
   }

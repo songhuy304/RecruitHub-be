@@ -1,8 +1,6 @@
 import { ApiResponseDto } from '@/common/response';
 import { UserResponseDto } from '../dtos/reponse';
-import { UserEntity } from '../entities/user.entity';
-
+import { IAuthUser } from '@/common/request/interfaces';
 export interface IUserService {
-  findOne(userName: string): Promise<UserEntity>;
-  getProfile(userName: string): Promise<ApiResponseDto<UserResponseDto>>;
+  getProfile(payload: IAuthUser): Promise<ApiResponseDto<UserResponseDto>>;
 }

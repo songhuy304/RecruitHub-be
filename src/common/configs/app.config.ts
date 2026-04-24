@@ -17,7 +17,8 @@ export default registerAs('app', (): Record<string, any> => {
 
   return {
     env: process.env.APP_ENV ?? APP_ENVIRONMENT.LOCAL,
-    name: process.env.APP_NAME ?? 'nestjs-starter',
+    name: process.env.APP_NAME ?? 'RecruitHub',
+    frontend: process.env.FRONTEND_URL,
 
     versioning: {
       enable: process.env.HTTP_VERSIONING_ENABLE === 'true',
@@ -46,5 +47,13 @@ export default registerAs('app', (): Record<string, any> => {
 
     debug: process.env.APP_DEBUG === 'true',
     logLevel: process.env.APP_LOG_LEVEL ?? 'info',
+
+    mail: {
+      host: process.env.MAIL_HOST,
+      port: process.env.MAIL_PORT,
+      user: process.env.MAIL_USER,
+      password: process.env.MAIL_PASSWORD,
+      from: process.env.APP_NAME,
+    },
   };
 });

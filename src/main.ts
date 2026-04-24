@@ -29,6 +29,8 @@ async function bootstrap() {
     const version = config.get<string>('app.versioning.version');
 
     app.useLogger(logger);
+
+    app.setGlobalPrefix('api');
     app.enableCors(config.get('app.cors'));
     app.enableVersioning({
       type: VersioningType.URI,

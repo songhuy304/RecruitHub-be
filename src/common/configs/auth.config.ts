@@ -17,5 +17,16 @@ export default registerAs(
       secret: process.env.OAUTH_GOOGLE_SECRETS,
       redirectUrl: process.env.OAUTH_GOOGLE_REDIRECT_URL,
     },
+
+    githubOauth: {
+      clientId: process.env.OAUTH_GITHUB_CLIENT_ID,
+      secret: process.env.OAUTH_GITHUB_SECRETS,
+      redirectUrl: process.env.OAUTH_GITHUB_REDIRECT_URL,
+    },
+
+    forgotPassword: {
+      expires: process.env.AUTH_FORGOT_PASSWORD_EXP,
+      secret: process.env.AUTH_FORGOT_PASSWORD_SECRET,
+    },
   }),
 );

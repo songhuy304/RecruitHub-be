@@ -3,28 +3,31 @@ import { HelperModule } from '@/common/helper/helper.module';
 import { JwtAccessStrategy } from '@/modules/auth/providers/access-jwt.strategy';
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
+import { UserModule } from '../users/user.module';
+import { OauthController } from './controller/auth.oauth.controller';
 import { AuthPublicController } from './controller/auth.public.controller';
-import { AuthService } from './services/auth.service';
-import { JwtRefreshStrategy } from './providers/refresh-jwt.strategy';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '../users/entities/user.entity';
+import { GithubStrategy } from './providers/github.strategy';
 import { GoogleStrategy } from './providers/google.strategy';
-import { GoogleController } from './controller/google.controller';
+import { JwtRefreshStrategy } from './providers/refresh-jwt.strategy';
+import { AuthMailService } from './services/auth.mail.service';
+import { AuthService } from './services/auth.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([UserEntity]),
-    HelperModule,
-    PassportModule,
-    DatabaseModule,
-  ],
-  controllers: [AuthPublicController, GoogleController],
+  imports: [HelperModule, UserModule, PassportModule, DatabaseModule],
+  controllers: [AuthPublicController, OauthController],
   providers: [
     JwtAccessStrategy,
     JwtRefreshStrategy,
     GoogleStrategy,
+    GithubStrategy,
     AuthService,
+    AuthMailService,
   ],
-  exports: [JwtAccessStrategy, JwtRefreshStrategy, GoogleStrategy],
+  exports: [
+    JwtAccessStrategy,
+    JwtRefreshStrategy,
+    GoogleStrategy,
+    GithubStrategy,
+  ],
 })
 export class AuthModule {}
