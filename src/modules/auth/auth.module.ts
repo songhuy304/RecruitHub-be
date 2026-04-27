@@ -4,6 +4,7 @@ import { JwtAccessStrategy } from '@/modules/auth/providers/access-jwt.strategy'
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { UserModule } from '../users/user.module';
+import { CompanyModule } from '../company/company.module';
 import { OauthController } from './controller/auth.oauth.controller';
 import { AuthPublicController } from './controller/auth.public.controller';
 import { GithubStrategy } from './providers/github.strategy';
@@ -13,7 +14,13 @@ import { AuthMailService } from './services/auth.mail.service';
 import { AuthService } from './services/auth.service';
 
 @Module({
-  imports: [HelperModule, UserModule, PassportModule, DatabaseModule],
+  imports: [
+    HelperModule,
+    UserModule,
+    CompanyModule,
+    PassportModule,
+    DatabaseModule,
+  ],
   controllers: [AuthPublicController, OauthController],
   providers: [
     JwtAccessStrategy,

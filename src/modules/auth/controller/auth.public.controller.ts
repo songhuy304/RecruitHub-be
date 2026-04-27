@@ -3,7 +3,12 @@ import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
 import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ForgotPasswordDto, LoginDto, SignupDto } from '../dtos/request';
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  ResetPasswordDto,
+  SignupDto,
+} from '../dtos/request';
 import { AuthRefreshResponseDto, LoginResponseDto } from '../dtos/response';
 import { AuthService } from '../services/auth.service';
 import { AuthUser } from '@/common/guard/decorator';
@@ -56,5 +61,13 @@ export class AuthPublicController {
     @Body() payload: ForgotPasswordDto,
   ): Promise<ApiGenericResponseDto> {
     return this.authService.forgotPassword(payload);
+  }
+
+  @PublicRoute()
+  @Post('/reset-password')
+  public async resetPassword(
+    @Body() payload: ResetPasswordDto,
+  ): Promise<ApiGenericResponseDto> {
+    return this.authService.resetPassword(payload);
   }
 }

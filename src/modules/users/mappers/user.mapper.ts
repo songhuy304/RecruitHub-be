@@ -1,4 +1,4 @@
-import { UserEntity } from '../entities/user.entity';
+import { UserEntity } from '@/common/entities/user.entity';
 import { UserResponseDto } from '../dtos/reponse';
 import { plainToInstance } from 'class-transformer';
 

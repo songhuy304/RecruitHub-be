@@ -1,5 +1,5 @@
 import { Repository } from '@/common/core/repository';
-import { UserEntity } from '@/modules/users/entities/user.entity';
+import { UserEntity } from '@/common/entities/user.entity';
 
 export interface IUserRepository extends Repository<UserEntity> {
   findByEmailOrUsername(userName: string): Promise<UserEntity | null>;

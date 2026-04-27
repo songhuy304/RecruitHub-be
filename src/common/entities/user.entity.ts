@@ -1,6 +1,7 @@
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseEntity } from '@/common/entities/base.entity';
 import { EAuthProvider, ERole } from '@/common/enums';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { CompanyEntity } from '@/common/entities/company.entity';
 
 @Entity('users')
 export class UserEntity extends BaseEntity {
@@ -31,10 +32,16 @@ export class UserEntity extends BaseEntity {
   @Column({
     type: 'enum',
     enum: ERole,
-    default: ERole.USER,
+    default: ERole.OWNER,
   })
   role: ERole;
 
   @Column({ type: 'enum', enum: EAuthProvider, default: EAuthProvider.LOCAL })
   provider: EAuthProvider;
+
+  @ManyToOne(() => CompanyEntity, (company) => company.users, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  company: CompanyEntity;
 }

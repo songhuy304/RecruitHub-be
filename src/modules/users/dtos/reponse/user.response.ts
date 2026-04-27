@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserEntity } from '../../entities/user.entity';
+import { UserEntity } from '@/common/entities/user.entity';
 import { Expose } from 'class-transformer';
 import { IsBoolean, IsEmail, IsEnum, IsString, IsUUID } from 'class-validator';
 import { ERole } from '../../../../common/enums';
@@ -30,7 +30,7 @@ export class UserResponseDto implements Partial<UserEntity> {
   @Expose()
   isVerified: boolean;
 
-  @ApiProperty({ enum: ERole, example: ERole.USER })
+  @ApiProperty({ enum: ERole, example: ERole.OWNER })
   @IsEnum(ERole)
   @Expose()
   role: ERole;

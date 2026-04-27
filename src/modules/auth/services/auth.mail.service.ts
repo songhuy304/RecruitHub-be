@@ -1,7 +1,7 @@
 import { HelperMailService } from '@/common/helper/services/helper.mail.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { IAuthMailService } from '../interfaces/auth.mail.service.interface';
-import { UserEntity } from '@/modules/users/entities/user.entity';
+import { UserEntity } from '@/common/entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: nestjs-app
+
+    ports:
+      - '${HTTP_PORT}:${HTTP_PORT}'
+
+    env_file:
+      - .env
+
+    restart: always
+
+    command: npm run start:prod
+
+volumes:
+  redis_data:

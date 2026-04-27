@@ -1,7 +1,7 @@
 import { REGEX_PASSWORD } from '@/common/constants';
-import { UserEntity } from '@/modules/users/entities/user.entity';
+import { UserEntity } from '@/common/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
 
 export class SignupDto implements Partial<UserEntity> {
   @ApiProperty({
@@ -32,4 +32,8 @@ export class SignupDto implements Partial<UserEntity> {
   @IsString()
   @IsNotEmpty()
   public fullName: string;
+
+  @IsOptional()
+  @IsString()
+  public companyName?: string;
 }
