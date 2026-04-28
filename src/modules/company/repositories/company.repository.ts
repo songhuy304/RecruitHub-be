@@ -1,7 +1,13 @@
+import { CompanyEntity } from '@/common/entities/company.entity';
+import {
+  HelperQueryService,
+  QueryOptions,
+} from '@/common/helper/services/helper.query.service';
+import { IPaginationParams } from '@/common/request/interfaces';
+import { PaginatedDto } from '@/common/response';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository as TypeOrmRepository } from 'typeorm';
-import { CompanyEntity } from '@/common/entities/company.entity';
 import { ICompanyRepository } from '../interfaces/company.repository.interface';
 
 @Injectable()
@@ -9,6 +15,7 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
   constructor(
     @InjectRepository(CompanyEntity)
     private readonly repo: TypeOrmRepository<CompanyEntity>,
+    private readonly helperQuery: HelperQueryService,
   ) {}
 
   async findOne(
@@ -44,5 +51,21 @@ export class CompanyRepositoryImpl implements ICompanyRepository {
 
   async remove(id: number): Promise<void> {
     await this.repo.delete(id);
+  }
+
+  async findAll(
+    params: IPaginationParams,
+    query?: QueryOptions<CompanyEntity>,
+  ): Promise<PaginatedDto<CompanyEntity>> {
+    return this.helperQuery.findMany(this.repo, {
+      ...query,
+      pagination: {
+        page: params.page,
+        limit: params.limit,
+      },
+      where: query?.where,
+      relations: query?.relations,
+      select: query?.select,
+    });
   }
 }

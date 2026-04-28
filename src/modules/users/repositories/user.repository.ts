@@ -3,12 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository as TypeOrmRepository } from 'typeorm';
 import { UserEntity } from '@/common/entities/user.entity';
 import { IUserRepository } from '../interfaces/user.repository.interface';
+import { IPaginationParams } from '@/common/request/interfaces';
+import { PaginatedDto } from '@/common/response';
+import { HelperPaginationService } from '@/common/helper/services/helper.pagination.service';
+import { QueryOptions } from '@/common/helper/services/helper.query.service';
 
 @Injectable()
 export class UserRepositoryImpl implements IUserRepository {
   constructor(
     @InjectRepository(UserEntity)
     private readonly repo: TypeOrmRepository<UserEntity>,
+    private readonly paginationHelper: HelperPaginationService,
   ) {}
 
   async findOne(
@@ -43,5 +48,12 @@ export class UserRepositoryImpl implements IUserRepository {
 
   async findById(id: number): Promise<UserEntity | null> {
     return this.repo.findOneBy({ id });
+  }
+
+  async findAll(
+    params: IPaginationParams,
+    options?: QueryOptions<UserEntity>,
+  ): Promise<PaginatedDto<UserEntity>> {
+    return this.paginationHelper.paginate(this.repo, params, options);
   }
 }

@@ -13,7 +13,7 @@ export class PaginationRequestDto {
   @Min(1)
   @Max(100)
   @Type(() => Number)
-  limit: number;
+  limit: number = 10;
 
   @ApiProperty({
     example: 1,
@@ -24,5 +24,5 @@ export class PaginationRequestDto {
   @IsNotEmpty()
   @Min(1)
   @Type(() => Number)
-  page: number;
+  page: number = 1;
 }

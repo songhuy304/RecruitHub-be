@@ -1,10 +1,10 @@
 import { ApiResponseDto } from '@/common/response';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable } from '@nestjs/common';
-import { UserResponseDto } from '../dtos/reponse';
 import { IUserService } from '../interfaces/user.service.interface';
 import { UserMapper } from '../mappers/user.mapper';
 import { IAuthUser } from '@/common/request/interfaces';
+import { UserResponseDto } from '../dtos/responses/user.response.dto';
 
 @Injectable()
 export class UserService implements IUserService {
