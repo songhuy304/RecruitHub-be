@@ -1,12 +1,9 @@
-export const ERROR_POST = {
-  NOTFOUND: 'error.post.not-found',
-};
-
 export const ERROR_USER = {
   FORBIDDEN: 'error.user.forbidden',
   NOT_FOUND: 'error.user.not-found',
   INVALID_CREDENTIALS: 'error.user.invalid-credentials',
   ALREADY_EXISTS: 'error.user.already-exists',
+  ALREADY_IN_TEAM: 'error.user.already-in-team',
 };
 
 export const ERROR_AUTH = {

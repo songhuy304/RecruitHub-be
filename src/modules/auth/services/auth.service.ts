@@ -26,7 +26,7 @@ import { IAuthService } from '../interfaces/auth.service.interface';
 import { AuthMailService } from './auth.mail.service';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
-import { CompanyRepositoryImpl } from '@/modules/company/repositories/company.repository';
+import { TeamRepositoryImpl } from '@/modules/team/repositories/team.repository';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -34,7 +34,7 @@ export class AuthService implements IAuthService {
 
   constructor(
     private readonly userRepository: UserRepositoryImpl,
-    private readonly companyRepository: CompanyRepositoryImpl,
+    private readonly teamRepository: TeamRepositoryImpl,
     private readonly helperEncryptionService: HelperEncryptionService,
     private readonly authMailService: AuthMailService,
   ) {}
@@ -68,20 +68,12 @@ export class AuthService implements IAuthService {
   }
 
   public async signup(payload: SignupDto): Promise<ApiGenericResponseDto> {
-    const { email, password, companyName } = payload;
+    const { email, password } = payload;
 
     const user = await this.userRepository.findByEmail(email);
 
     if (user) {
       throw new BadRequestException(ERROR_USER.ALREADY_EXISTS);
-    }
-    let company = null;
-
-    if (companyName) {
-      company = await this.companyRepository.create({
-        name: companyName,
-        inviteCode: crypto.randomUUID(),
-      });
     }
 
     const hashPassword =
@@ -90,7 +82,6 @@ export class AuthService implements IAuthService {
     await this.userRepository.create({
       ...payload,
       password: hashPassword,
-      company: company ?? null,
     });
 
     return ApiGenericResponseDto.success('register success');

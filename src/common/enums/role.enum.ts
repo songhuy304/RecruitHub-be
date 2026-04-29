@@ -3,3 +3,8 @@ export enum ERole {
   MEMBER = 'MEMBER',
   OWNER = 'OWNER',
 }
+
+export enum ETeamRole {
+  OWNER = 'OWNER',
+  MEMBER = 'MEMBER',
+}

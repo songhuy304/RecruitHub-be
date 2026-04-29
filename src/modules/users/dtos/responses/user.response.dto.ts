@@ -51,5 +51,5 @@ export class UserResponseDto {
   @Expose()
   @IsNumber()
   @IsOptional()
-  companyId?: number;
+  teamId?: number;
 }

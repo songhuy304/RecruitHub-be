@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { ERole } from '@/common/enums';
 
-export class CompanyMemberDto {
+export class TeamMemberDto {
   @ApiProperty({ example: 1 })
   @Expose()
   @IsNumber()
@@ -51,5 +51,5 @@ export class CompanyMemberDto {
   @Expose()
   @IsNumber()
   @IsOptional()
-  companyId?: number;
+  teamId?: number;
 }

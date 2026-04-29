@@ -2,8 +2,8 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseEntity } from '@/common/entities/base.entity';
 import { UserEntity } from '@/common/entities/user.entity';
 
-@Entity('companies')
-export class CompanyEntity extends BaseEntity {
+@Entity('teams')
+export class TeamEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -13,6 +13,9 @@ export class CompanyEntity extends BaseEntity {
   @Column({ nullable: true })
   inviteCode: string;
 
-  @OneToMany(() => UserEntity, (user) => user.company)
+  @Column()
+  createdById: number;
+
+  @OneToMany(() => UserEntity, (user) => user.team)
   users: UserEntity[];
 }

@@ -4,7 +4,7 @@ import { JwtAccessStrategy } from '@/modules/auth/providers/access-jwt.strategy'
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { UserModule } from '../users/user.module';
-import { CompanyModule } from '../company/company.module';
+import { TeamModule } from '../team/team.module';
 import { OauthController } from './controller/auth.oauth.controller';
 import { AuthPublicController } from './controller/auth.public.controller';
 import { GithubStrategy } from './providers/github.strategy';
@@ -17,7 +17,7 @@ import { AuthService } from './services/auth.service';
   imports: [
     HelperModule,
     UserModule,
-    CompanyModule,
+    TeamModule,
     PassportModule,
     DatabaseModule,
   ],

@@ -1,7 +1,13 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { BaseEntity } from '@/common/entities/base.entity';
-import { EAuthProvider, ERole } from '@/common/enums';
-import { CompanyEntity } from '@/common/entities/company.entity';
+import { EAuthProvider, ERole, ETeamRole } from '@/common/enums';
+import { TeamEntity } from '@/common/entities/team.entity';
 
 @Entity('users')
 export class UserEntity extends BaseEntity {
@@ -36,12 +42,19 @@ export class UserEntity extends BaseEntity {
   })
   role: ERole;
 
+  @Column({ type: 'enum', enum: ETeamRole, nullable: true })
+  teamRole: ETeamRole | null;
+
   @Column({ type: 'enum', enum: EAuthProvider, default: EAuthProvider.LOCAL })
   provider: EAuthProvider;
 
-  @ManyToOne(() => CompanyEntity, (company) => company.users, {
+  @Column({ nullable: true })
+  teamId: number;
+
+  @ManyToOne(() => TeamEntity, (team) => team.users, {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  company: CompanyEntity;
+  @JoinColumn({ name: 'teamId' })
+  team: TeamEntity;
 }
