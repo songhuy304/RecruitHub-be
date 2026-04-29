@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CompanyRepositoryImpl } from '../repositories/company.repository';
 import { ICompanyService } from '../interfaces/company.interface';
 import { CompanyGetAllMemberDto } from '../dtos/requests/company.get.request';
 import { PaginatedResponseDto } from '@/common/response';
 import { IAuthUser } from '@/common/request/interfaces';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { CompanyMemberDto } from '../dtos/response/company.get.response.dto';
+import { MemberMapper } from '../mappers';
 
 @Injectable()
 export class CompanyService implements ICompanyService {
@@ -37,7 +37,9 @@ export class CompanyService implements ICompanyService {
       },
     );
 
-    return PaginatedResponseDto.success(data.data, data.meta);
+    const dataMapper = MemberMapper.toResponses(data.data ?? []);
+
+    return PaginatedResponseDto.success(dataMapper, data.meta);
   }
 
   async getCoundMember() {}

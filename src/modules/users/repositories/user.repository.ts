@@ -5,15 +5,17 @@ import { UserEntity } from '@/common/entities/user.entity';
 import { IUserRepository } from '../interfaces/user.repository.interface';
 import { IPaginationParams } from '@/common/request/interfaces';
 import { PaginatedDto } from '@/common/response';
-import { HelperPaginationService } from '@/common/helper/services/helper.pagination.service';
-import { QueryOptions } from '@/common/helper/services/helper.query.service';
+import {
+  HelperQueryService,
+  QueryOptions,
+} from '@/common/helper/services/helper.query.service';
 
 @Injectable()
 export class UserRepositoryImpl implements IUserRepository {
   constructor(
     @InjectRepository(UserEntity)
     private readonly repo: TypeOrmRepository<UserEntity>,
-    private readonly paginationHelper: HelperPaginationService,
+    private readonly helperQuery: HelperQueryService,
   ) {}
 
   async findOne(
@@ -52,8 +54,17 @@ export class UserRepositoryImpl implements IUserRepository {
 
   async findAll(
     params: IPaginationParams,
-    options?: QueryOptions<UserEntity>,
+    query?: QueryOptions<UserEntity>,
   ): Promise<PaginatedDto<UserEntity>> {
-    return this.paginationHelper.paginate(this.repo, params, options);
+    return this.helperQuery.findMany(this.repo, {
+      ...query,
+      pagination: {
+        page: params.page,
+        limit: params.limit,
+      },
+      where: query?.where,
+      relations: query?.relations,
+      select: query?.select,
+    });
   }
 }
