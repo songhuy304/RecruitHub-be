@@ -1,14 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsEmail,
   IsEnum,
   IsNumber,
   IsOptional,
   IsString,
+  ValidateNested,
 } from 'class-validator';
-import { ERole } from '@/common/enums';
+import { ERole, ETeamRole } from '@/common/enums';
 
 export class TeamMemberDto {
   @ApiProperty({ example: 1 })
@@ -42,14 +44,39 @@ export class TeamMemberDto {
   @IsEnum(ERole)
   role: ERole;
 
+  @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER })
+  @Expose()
+  @IsEnum(ETeamRole)
+  teamRole: ETeamRole;
+
   @ApiProperty({ example: true })
   @Expose()
   @IsBoolean()
   isVerified: boolean;
+}
 
-  @ApiProperty({ example: 1, required: false })
+export class TeamResponseDto {
+  @ApiProperty({ example: 1 })
   @Expose()
   @IsNumber()
-  @IsOptional()
-  teamId?: number;
+  id: number;
+
+  @ApiProperty({ example: 'Backend Team' })
+  @Expose()
+  @IsString()
+  name: string;
+
+  @ApiProperty({ example: 'ABC123' })
+  @Expose()
+  @IsString()
+  inviteCode: string;
+
+  @ApiProperty({
+    type: [TeamMemberDto],
+  })
+  @Expose()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TeamMemberDto)
+  users: TeamMemberDto[];
 }

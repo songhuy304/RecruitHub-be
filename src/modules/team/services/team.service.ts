@@ -1,27 +1,19 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ITeamService } from '../interfaces/team.interface';
-import {
-  ApiGenericResponseDto,
-  ApiResponseDto,
-  PaginatedResponseDto,
-} from '@/common/response';
-import { IAuthUser } from '@/common/request/interfaces';
-import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
-import { TeamMemberDto } from '../dtos/response/team.get.response.dto';
-import { MemberMapper } from '../mappers';
-import { TeamRepositoryImpl } from '../repositories/team.repository';
-import {
-  CreateTeamDto,
-  GetAllMemberDto,
-  JoinTeamByCodeDto,
-} from '../dtos/requests';
-import { generateCode } from '@/common/utils';
+import { ERROR_USER } from '@/common/constants';
+import { ETeamRole } from '@/common/enums';
 import {
   BadRequestException,
   NotFoundException,
 } from '@/common/filters/exception';
-import { ETeamRole } from '@/common/enums';
-import { ERROR_USER } from '@/common/constants';
+import { IAuthUser } from '@/common/request/interfaces';
+import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
+import { generateCode } from '@/common/utils';
+import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
+import { Injectable, Logger } from '@nestjs/common';
+import { CreateTeamDto, JoinTeamByCodeDto } from '../dtos/requests';
+import { TeamResponseDto } from '../dtos/response';
+import { ITeamService } from '../interfaces/team.interface';
+import { TeamRepositoryImpl } from '../repositories/team.repository';
+import { TeamMapper } from '../mappers';
 
 @Injectable()
 export class TeamService implements ITeamService {
@@ -31,34 +23,17 @@ export class TeamService implements ITeamService {
     private readonly teamRepo: TeamRepositoryImpl,
   ) {}
 
-  async findAllMember(
-    payload: GetAllMemberDto,
-    userData: IAuthUser,
-  ): Promise<PaginatedResponseDto<TeamMemberDto>> {
-    const user = await this.userRepo.findOneBy({
-      id: userData.userId,
+  async getTeam(authUser: IAuthUser): Promise<ApiResponseDto<TeamResponseDto>> {
+    const user = await this.userRepo.findOneBy({ id: authUser.userId });
+
+    const team = await this.teamRepo.findOne({
+      where: { id: user.teamId },
+      relations: ['users']
     });
 
-    if (!user) {
-      return PaginatedResponseDto.success([], null);
-    }
+    const dataMapper = TeamMapper.toResponse(team);
 
-    const data = await this.userRepo.findAll(
-      { limit: payload.limit, page: payload.page },
-      {
-        filters: [
-          {
-            field: 'fullName',
-            op: 'ilike',
-            value: payload.fullName,
-          },
-        ],
-      },
-    );
-
-    const dataMapper = MemberMapper.toResponses(data.data ?? []);
-
-    return PaginatedResponseDto.success(dataMapper, data.meta);
+    return ApiResponseDto.success(dataMapper);
   }
 
   async createTeam(
@@ -70,8 +45,9 @@ export class TeamService implements ITeamService {
         id: authUser.userId,
       });
 
-      if (user.teamId)
+      if (user.teamId) {
         throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
+      }
 
       const team = await this.teamRepo.create({
         ...payload,
@@ -108,23 +84,12 @@ export class TeamService implements ITeamService {
     payload: JoinTeamByCodeDto,
     authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
-    const team = await this.teamRepo.findOneBy({
-      inviteCode: payload.inviteCode,
-    });
+    const [team, user] = await Promise.all([
+      this.teamRepo.findOneBy({ inviteCode: payload.inviteCode }),
+      this.userRepo.findOneBy({ id: authUser.userId }),
+    ]);
 
-    if (!team) throw new NotFoundException();
-
-    const user = await this.userRepo.findOne({
-      where: { id: authUser.userId },
-      select: ['id', 'teamRole'],
-      relations: ['team'],
-    });
-
-    if (!user) throw new NotFoundException();
-
-    if (user.team) {
-      throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
-    }
+    if (user.teamId) throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
 
     await this.userRepo.update(authUser.userId, {
       team,

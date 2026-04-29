@@ -1,1 +1,1 @@
-export * from './team-member.mapper';
+export * from './team.get.mapper';
