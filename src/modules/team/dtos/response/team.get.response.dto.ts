@@ -80,3 +80,10 @@ export class TeamResponseDto {
   @Type(() => TeamMemberDto)
   users: TeamMemberDto[];
 }
+
+export class InviteCodeResponseDto {
+  @ApiProperty({ example: 'ABC123' })
+  @Expose()
+  @IsString()
+  inviteCode: string;
+}

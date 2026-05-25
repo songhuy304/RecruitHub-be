@@ -12,3 +12,11 @@ export const ERROR_AUTH = {
   TOKEN_MISSING: 'error.auth.token-missing', // không gửi token
   TOKEN_UNAUTHORIZED: 'error.auth.unauthorized', // không đủ quyền / không hợp lệ
 };
+
+export const ERROR_TEAM = {
+  NOT_FOUND: 'error.team.not-found',
+  INVALID_INVITE_CODE: 'error.team.invalid-invite-code',
+  REQUEST_EXIST: 'error.team.request-exists',
+  REQUEST_NOT_FOUND: 'error.team.request-not-found',
+  USER_ALREADY_IN_TEAM: 'error.team.user-already-in-team',
+};

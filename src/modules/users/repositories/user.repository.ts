@@ -28,4 +28,8 @@ export class UserRepositoryImpl extends IUserRepository {
   async findById(id: number): Promise<UserEntity | null> {
     return this.repo.findOneBy({ id });
   }
+
+  async existsTeam(teamId: number): Promise<boolean> {
+    return this.repo.exists({ where: { teamId } });
+  }
 }

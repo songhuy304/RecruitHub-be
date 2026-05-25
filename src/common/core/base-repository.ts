@@ -19,6 +19,10 @@ export abstract class BaseRepository<TEntity extends Entity> {
     protected readonly helperQuery: HelperQueryService,
   ) {}
 
+  get repository(): TypeOrmRepository<TEntity> {
+    return this.repo;
+  }
+
   async create(data: DeepPartial<TEntity>): Promise<TEntity> {
     const entity = this.repo.create(data);
     return this.repo.save(entity as TEntity);

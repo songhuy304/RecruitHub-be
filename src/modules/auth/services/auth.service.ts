@@ -26,7 +26,6 @@ import { IAuthService } from '../interfaces/auth.service.interface';
 import { AuthMailService } from './auth.mail.service';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
-import { TeamRepositoryImpl } from '@/modules/team/repositories/team.repository';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -34,7 +33,6 @@ export class AuthService implements IAuthService {
 
   constructor(
     private readonly userRepository: UserRepositoryImpl,
-    private readonly teamRepository: TeamRepositoryImpl,
     private readonly helperEncryptionService: HelperEncryptionService,
     private readonly authMailService: AuthMailService,
   ) {}
@@ -60,6 +58,7 @@ export class AuthService implements IAuthService {
     const tokens = await this.helperEncryptionService.createJwtTokens({
       role: user.role,
       userId: user.id,
+      teamId: user.teamId ?? null,
     });
 
     await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
@@ -105,6 +104,7 @@ export class AuthService implements IAuthService {
     const token = await this.helperEncryptionService.createForgotPasswordToken({
       userId: user.id,
       role: user.role,
+      teamId: user.teamId ?? null,
     });
 
     await this.authMailService.forgotPasswordMail(user, token);
@@ -175,6 +175,7 @@ export class AuthService implements IAuthService {
     const tokenPayload: IAuthUser = {
       userId: payload.userId,
       role: payload.role,
+      teamId: payload.teamId,
     };
 
     const tokens =
@@ -197,6 +198,7 @@ export class AuthService implements IAuthService {
     const tokens = await this.helperEncryptionService.createJwtTokens({
       userId: user.id,
       role: user.role,
+      teamId: user.teamId ?? null,
     });
 
     await this.upsertUserRefreshToken(user.id, tokens.refreshToken);

@@ -138,17 +138,45 @@ function buildWhere<T extends ObjectLiteral>(
     }, {} as FindOptionsWhere<T>);
 }
 
+function removeUndefinedDeep<T>(obj: T): T {
+  if (Array.isArray(obj)) {
+    return obj.map(removeUndefinedDeep) as T;
+  }
+
+  if (obj !== null && typeof obj === 'object') {
+    return Object.entries(obj).reduce((acc, [key, value]) => {
+      if (value !== undefined && value !== null) {
+        (acc as Record<string, unknown>)[key] = removeUndefinedDeep(value);
+      }
+
+      return acc;
+    }, {} as T);
+  }
+
+  return obj;
+}
+
 function mergeWhere<T extends ObjectLiteral>(
   fromFilters: FindOptionsWhere<T>,
   extra?: FindOptionsWhere<T> | FindOptionsWhere<T>[],
 ): FindOptionsWhere<T> | FindOptionsWhere<T>[] {
-  if (!extra) return fromFilters;
+  const cleanedFilters = removeUndefinedDeep(fromFilters);
+
+  if (!extra) return cleanedFilters;
 
   if (Array.isArray(extra)) {
-    return extra.map((branch) => ({ ...fromFilters, ...branch }));
+    return extra.map((branch) =>
+      removeUndefinedDeep({
+        ...cleanedFilters,
+        ...branch,
+      }),
+    );
   }
 
-  return { ...fromFilters, ...extra };
+  return removeUndefinedDeep({
+    ...cleanedFilters,
+    ...extra,
+  });
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────────

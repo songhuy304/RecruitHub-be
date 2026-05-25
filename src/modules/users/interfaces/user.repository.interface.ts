@@ -5,4 +5,5 @@ export abstract class IUserRepository extends BaseRepository<UserEntity> {
   abstract findByEmailOrUsername(userName: string): Promise<UserEntity | null>;
   abstract findByEmail(email: string): Promise<UserEntity | null>;
   abstract findById(id: number): Promise<UserEntity | null>;
+  abstract existsTeam(teamId: number): Promise<boolean>;
 }
