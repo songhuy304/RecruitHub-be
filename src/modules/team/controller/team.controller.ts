@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -14,6 +15,8 @@ import { IAuthUser } from '@/common/request/interfaces';
 import { AuthUser } from '@/common/guard/decorator';
 import { CreateTeamDto, JoinRequestDto } from '../dtos/requests';
 import { TeamRequestService } from '../services/team-request.service';
+import { TeamRoles } from '@/common/guard/decorator/guard.role.decorator';
+import { ETeamRole } from '@/common/enums';
 
 @ApiTags('Teams')
 @ApiBearerAuth('accessToken')
@@ -44,6 +47,7 @@ export class TeamController {
     return this.teamRequestService.joinByCode({ inviteCode: code }, user);
   }
 
+  @TeamRoles(ETeamRole.OWNER)
   @Get('/join-requests')
   async getJoinRequests(
     @Query() query: JoinRequestDto,
@@ -52,13 +56,32 @@ export class TeamController {
     return this.teamRequestService.getJoinRequests(query, user);
   }
 
+  @TeamRoles(ETeamRole.OWNER)
   @Post('/join-requests/:id/approve')
   async approveJoinRequest(@Param('id', ParseIntPipe) id: number) {
     return this.teamRequestService.approveJoinRequest(id);
   }
 
+  @TeamRoles(ETeamRole.OWNER)
   @Post('/join-requests/:id/reject')
   async rejectJoinRequest(@Param('id', ParseIntPipe) id: number) {
     return this.teamRequestService.rejectJoinRequest(id);
+  }
+
+  @Post('/leave')
+  async leaveTeam(@AuthUser() user: IAuthUser) {
+    return this.teamService.leaveTeam(user);
+  }
+
+  @TeamRoles(ETeamRole.OWNER)
+  @Delete('/members/:id')
+  async removeMember(@Param('id', ParseIntPipe) id: number, @AuthUser() user: IAuthUser) {
+    return this.teamService.removeMember(id, user);
+  }
+
+  @TeamRoles(ETeamRole.OWNER)
+  @Delete()
+  async deleteTeam(@AuthUser() user: IAuthUser) {
+    return this.teamService.deleteTeam(user);
   }
 }

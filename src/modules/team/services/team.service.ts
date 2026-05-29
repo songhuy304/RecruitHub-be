@@ -83,7 +83,7 @@ export class TeamService implements ITeamService {
 
     if (!user) throw new NotFoundException();
     if (!user.teamId || !user.team) {
-      throw new BadRequestException(ERROR_TEAM.NOT_FOUND);
+      return ApiResponseDto.success(null);
     }
 
     return ApiResponseDto.success({
