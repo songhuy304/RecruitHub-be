@@ -8,21 +8,20 @@ import { UserModule } from '../users/user.module';
 import { TeamController } from './controller/team.controller';
 import { TeamRequestEntity } from '@/common/entities';
 import { TeamRequestRepository } from './repositories/team-request.repository';
-import { HelperQueryService } from '@/common/helper/services/helper.query.service';
+import { TeamRequestService } from './services/team-request.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([TeamEntity, TeamRequestEntity]),
     HelperModule,
     UserModule,
-    HelperQueryService,
   ],
   controllers: [TeamController],
   providers: [
     TeamRepositoryImpl,
     TeamRequestRepository,
     TeamService,
-    HelperQueryService,
+    TeamRequestService,
   ],
   exports: [TeamRepositoryImpl, TeamService],
 })

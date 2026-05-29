@@ -19,4 +19,6 @@ export const ERROR_TEAM = {
   REQUEST_EXIST: 'error.team.request-exists',
   REQUEST_NOT_FOUND: 'error.team.request-not-found',
   USER_ALREADY_IN_TEAM: 'error.team.user-already-in-team',
+  REQUEST_ALREADY_PROCESSED: 'error.team.request-already-processed',
+  NOT_IN_TEAM: 'error.team.not-in-team',
 };

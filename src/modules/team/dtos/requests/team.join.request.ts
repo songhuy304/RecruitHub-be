@@ -1,5 +1,5 @@
 import { ETeamRequestStatus } from '@/common/enums';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString, Length } from 'class-validator';
 
 export class JoinTeamByCodeDto {
@@ -11,6 +11,7 @@ export class JoinTeamByCodeDto {
 
 export class JoinRequestDto {
   @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   name?: string;
@@ -18,6 +19,10 @@ export class JoinRequestDto {
   @ApiProperty({
     enum: ETeamRequestStatus,
     required: false,
+    default: ETeamRequestStatus.PENDING,
+  })
+  @ApiPropertyOptional({
+    enum: ETeamRequestStatus,
     default: ETeamRequestStatus.PENDING,
   })
   @IsOptional()

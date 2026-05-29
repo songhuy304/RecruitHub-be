@@ -3,6 +3,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAccessGuard } from './jwt.access.guard';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TeamRolesGuard } from './team-role.guard';
 
 @Module({
   imports: [
@@ -28,6 +29,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     {
       provide: APP_GUARD,
       useClass: JwtAccessGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: TeamRolesGuard,
     },
   ],
 })

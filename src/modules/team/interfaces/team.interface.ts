@@ -1,7 +1,28 @@
 import { IAuthUser } from '@/common/request/interfaces';
-import { ApiResponseDto } from '@/common/response';
-import { TeamResponseDto } from '../dtos/response';
-
+import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
+import {
+  InviteCodeResponseDto,
+  TeamResponseDto,
+} from '../dtos/response';
+import { CreateTeamDto } from '../dtos/requests';
 export interface ITeamService {
-  getTeam(userData: IAuthUser): Promise<ApiResponseDto<TeamResponseDto>>;
+  getTeam(authUser: IAuthUser): Promise<ApiResponseDto<TeamResponseDto[]>>;
+
+  createTeam(
+    payload: CreateTeamDto,
+    authUser: IAuthUser,
+  ): Promise<ApiGenericResponseDto>;
+
+  getInviteCode(
+    payload: IAuthUser,
+  ): Promise<ApiResponseDto<InviteCodeResponseDto | null>>;
+
+  leaveTeam(authUser: IAuthUser): Promise<ApiGenericResponseDto>;
+
+  removeMember(
+    userId: number,
+    authUser: IAuthUser,
+  ): Promise<ApiGenericResponseDto>;
+
+  deleteTeam(authUser: IAuthUser): Promise<ApiGenericResponseDto>;
 }

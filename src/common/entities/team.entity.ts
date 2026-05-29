@@ -10,6 +10,12 @@ export class TeamEntity extends BaseEntity {
   @Column()
   name: string;
 
+  @Column()
+  slug: string;
+
+  @Column({ nullable: true })
+  logoUrl: string;
+
   @Column({ nullable: true })
   inviteCode: string;
 

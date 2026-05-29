@@ -52,4 +52,7 @@ export class UserResponseDto {
   @IsNumber()
   @IsOptional()
   teamId?: number;
+
+  @Expose()
+  teamRole?: ERole;
 }

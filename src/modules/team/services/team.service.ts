@@ -1,5 +1,5 @@
 import { ERROR_TEAM, ERROR_USER } from '@/common/constants';
-import { ETeamRequestStatus, ETeamRole } from '@/common/enums';
+import { ETeamRole } from '@/common/enums';
 import {
   BadRequestException,
   NotFoundException,
@@ -9,17 +9,13 @@ import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
 import { generateCode } from '@/common/utils';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  CreateTeamDto,
-  JoinRequestDto,
-  JoinTeamByCodeDto,
-} from '../dtos/requests';
+import { CreateTeamDto } from '../dtos/requests';
 import { InviteCodeResponseDto, TeamResponseDto } from '../dtos/response';
 import { ITeamService } from '../interfaces/team.interface';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamMapper } from '../mappers';
-import { TeamRequestRepository } from '../repositories/team-request.repository';
-import { HelperQueryService } from '@/common/helper/services/helper.query.service';
+import { DataSource } from 'typeorm';
+import { TeamRequestEntity, UserEntity } from '@/common/entities';
 
 @Injectable()
 export class TeamService implements ITeamService {
@@ -27,11 +23,12 @@ export class TeamService implements ITeamService {
   constructor(
     private readonly userRepo: UserRepositoryImpl,
     private readonly teamRepo: TeamRepositoryImpl,
-    private readonly teamRequestRepo: TeamRequestRepository,
-    private readonly helperQuery: HelperQueryService,
+    private readonly dataSource: DataSource,
   ) {}
 
-  async getTeam(authUser: IAuthUser): Promise<ApiResponseDto<TeamResponseDto>> {
+  async getTeam(
+    authUser: IAuthUser,
+  ): Promise<ApiResponseDto<TeamResponseDto[]>> {
     const user = await this.userRepo.findOneBy({ id: authUser.userId });
 
     if (!user.teamId) {
@@ -42,10 +39,7 @@ export class TeamService implements ITeamService {
       where: { id: user.teamId },
       relations: ['users'],
     });
-
-    const dataMapper = TeamMapper.toResponse(team);
-
-    return ApiResponseDto.success(dataMapper);
+    return ApiResponseDto.success(team ? TeamMapper.toResponse(team) : []);
   }
 
   async createTeam(
@@ -88,83 +82,100 @@ export class TeamService implements ITeamService {
     });
 
     if (!user) throw new NotFoundException();
+    if (!user.teamId || !user.team) {
+      throw new BadRequestException(ERROR_TEAM.NOT_FOUND);
+    }
 
     return ApiResponseDto.success({
       inviteCode: user.team.inviteCode ? user.team.inviteCode : null,
     });
   }
 
-  async joinByCode(
-    payload: JoinTeamByCodeDto,
+  async leaveTeam(authUser: IAuthUser) {
+    try {
+      const team = await this.teamRepo.findOneBy({ id: authUser.teamId });
+
+      if (!team) {
+        throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
+      }
+
+      await this.dataSource.transaction(async (manager) => {
+        if (authUser.userId === team.createdById) {
+          await manager.update(
+            UserEntity,
+            { teamId: authUser.teamId },
+            { teamId: null, teamRole: null },
+          );
+
+          await manager.delete(TeamRequestEntity, {
+            team: { id: authUser.teamId },
+          });
+
+          await manager.delete('teams', { id: authUser.teamId });
+
+          return;
+        }
+
+        await manager.update(UserEntity, authUser.userId, {
+          teamId: null,
+          teamRole: null,
+        });
+      });
+
+      return ApiGenericResponseDto.success();
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
+    }
+  }
+
+  async removeMember(
+    userId: number,
     authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
-    if (authUser.teamId) {
-      throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
+    try {
+      if (userId === authUser.userId) {
+        throw new BadRequestException(ERROR_TEAM.REQUEST_EXIST);
+      }
+
+      const user = await this.userRepo.findOneBy({ id: userId });
+
+      if (!user) {
+        throw new NotFoundException(ERROR_USER.NOT_FOUND);
+      }
+
+      if (!user.teamId || user.teamId !== authUser.teamId) {
+        throw new BadRequestException(ERROR_TEAM.NOT_IN_TEAM);
+      }
+
+      await this.userRepo.update(userId, {
+        teamId: null,
+        teamRole: null,
+      });
+
+      return ApiGenericResponseDto.success();
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
     }
-
-    const [team, user] = await Promise.all([
-      this.teamRepo.findOneBy({ inviteCode: payload.inviteCode }),
-      this.userRepo.findOneBy({ id: authUser.userId }),
-    ]);
-
-    if (!team) throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
-    if (user.teamId) throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
-
-    const existedRequest = await this.teamRequestRepo.exists({
-      team: { id: team.id },
-      user: { id: user.id },
-    });
-
-    if (existedRequest) {
-      throw new BadRequestException(ERROR_TEAM.REQUEST_EXIST);
-    }
-
-    await this.teamRequestRepo.create({
-      status: ETeamRequestStatus.PENDING,
-      team,
-      user,
-    });
-
-    return ApiGenericResponseDto.success();
   }
 
-  async getJoinRequests(query: JoinRequestDto, authUser: IAuthUser) {
-    const team = await this.teamRepo.findOneBy({ id: authUser.teamId });
+  async deleteTeam(authUser: IAuthUser) {
+    try {
+      const team = await this.teamRepo.findOneBy({ id: authUser.teamId });
+      if (!team) {
+        throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
+      }
 
-    if (!team) throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
-
-    return this.helperQuery.findAll(this.teamRequestRepo.repository, {
-      where: {
-        team: { id: team.id },
-        status: query.status,
-      },
-    });
-  }
-
-  async approveJoinRequest(idRequest: number): Promise<ApiGenericResponseDto> {
-    const request = await this.teamRequestRepo.findOne({
-      where: { id: idRequest },
-      relations: ['team', 'user'],
-    });
-    if (!request) throw new NotFoundException(ERROR_TEAM.REQUEST_NOT_FOUND);
-
-    const existingUser = await this.userRepo.existsTeam(request.team.id);
-    if (existingUser) {
-      throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
+      if (team.createdById !== authUser.userId) {
+        throw new BadRequestException(ERROR_TEAM.REQUEST_EXIST);
+      }
+      await this.teamRepo.remove(team.id);
+      return ApiGenericResponseDto.success();
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
     }
-
-    const team = await this.teamRepo.findOneBy({ id: request.team.id });
-    if (!team) throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
-
-    await Promise.all([
-      this.userRepo.update(request.user.id, {
-        teamId: team.id,
-      }),
-      this.teamRequestRepo.update(request.id, {
-        status: ETeamRequestStatus.APPROVED,
-      }),
-    ]);
-
-    return ApiGenericResponseDto.success();
   }
+  // async inviteMember(dto: InviteMembersDto, authUser: IAuthUser) {}
 }
