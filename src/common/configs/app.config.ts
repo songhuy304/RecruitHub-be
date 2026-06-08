@@ -3,12 +3,8 @@ import { registerAs } from '@nestjs/config';
 import { APP_ENVIRONMENT } from '../enums';
 
 export default registerAs('app', (): Record<string, any> => {
-  const corsOrigins = process.env.APP_CORS_ORIGINS
-    ? process.env.APP_CORS_ORIGINS.split(',').map((origin) => origin.trim())
-    : ['*'];
-
   const corsConfig: CorsOptions = {
-    origin: corsOrigins,
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,

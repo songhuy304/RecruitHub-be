@@ -15,7 +15,7 @@ import { AuthUser } from '@/common/guard/decorator';
 import { JwtRefreshGuard } from '@/common/guard/jwt.refresh.guard';
 
 @ApiTags('Auth')
-@Controller()
+@Controller('auth')
 export class AuthPublicController {
   constructor(private readonly authService: AuthService) {}
 
