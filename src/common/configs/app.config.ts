@@ -55,5 +55,13 @@ export default registerAs('app', (): Record<string, any> => {
       password: process.env.MAIL_PASSWORD,
       from: process.env.APP_NAME,
     },
+
+    aws: {
+      bucketName: process.env.AWS_S3_BUCKET,
+      region: process.env.AWS_S3_REGION,
+      previewLinkExpiration: process.env.AWS_S3_PRESIGN_LINK_EXPIRES,
+      accessKey: process.env.AWS_ACCESS_KEY,
+      secretKey: process.env.AWS_SECRET_KEY,
+    },
   };
 });

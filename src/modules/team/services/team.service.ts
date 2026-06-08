@@ -10,12 +10,18 @@ import { generateCode } from '@/common/utils';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateTeamDto } from '../dtos/requests';
-import { InviteCodeResponseDto, TeamResponseDto } from '../dtos/response';
+import {
+  CreateTeamResponseDto,
+  InviteCodeResponseDto,
+  TeamResponseDto,
+} from '../dtos/response';
 import { ITeamService } from '../interfaces/team.interface';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamMapper } from '../mappers';
 import { DataSource } from 'typeorm';
 import { TeamRequestEntity, UserEntity } from '@/common/entities';
+import { HelperEncryptionService } from '@/common/helper/services/helper.encryption.service';
+import { TeamEntity } from '@/common/entities/team.entity';
 
 @Injectable()
 export class TeamService implements ITeamService {
@@ -23,6 +29,7 @@ export class TeamService implements ITeamService {
   constructor(
     private readonly userRepo: UserRepositoryImpl,
     private readonly teamRepo: TeamRepositoryImpl,
+    private readonly helperEncryptionService: HelperEncryptionService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -45,28 +52,42 @@ export class TeamService implements ITeamService {
   async createTeam(
     payload: CreateTeamDto,
     authUser: IAuthUser,
-  ): Promise<ApiGenericResponseDto> {
+  ): Promise<ApiResponseDto<CreateTeamResponseDto>> {
     try {
-      const user = await this.userRepo.findOneBy({
-        id: authUser.userId,
-      });
-
-      if (user.teamId) {
+      if (authUser.teamId) {
         throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
       }
 
-      const team = await this.teamRepo.create({
-        ...payload,
-        createdById: authUser.userId,
-        inviteCode: generateCode(6),
+      const token = await this.dataSource.transaction(async (manager) => {
+        const team = await manager.save(TeamEntity, {
+          ...payload,
+          createdById: authUser.userId,
+          inviteCode: generateCode(6),
+        });
+
+        await manager.update(UserEntity, authUser.userId, {
+          team,
+          teamRole: ETeamRole.OWNER,
+        });
+
+        const token = await this.helperEncryptionService.createJwtTokens({
+          userId: authUser.userId,
+          role: authUser.role,
+          teamRole: ETeamRole.OWNER,
+          teamId: team.id,
+        });
+
+        const hash = await this.helperEncryptionService.createHash(
+          token.refreshToken,
+        );
+        await manager.update(UserEntity, authUser.userId, {
+          refreshToken: hash,
+        });
+
+        return token;
       });
 
-      await this.userRepo.update(authUser.userId, {
-        team,
-        teamRole: ETeamRole.OWNER,
-      });
-
-      return ApiGenericResponseDto.success();
+      return ApiResponseDto.success(token);
     } catch (error) {
       this.logger.error(error);
       throw error;

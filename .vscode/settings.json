@@ -1,3 +1,31 @@
 {
-    "js/ts.tsdk.path": "node_modules\\typescript\\lib"
-}
+    "oxc.fmt.configPath": ".oxfmtrc.json",
+    "oxc.enable.oxfmt": true,
+    "oxc.enable.oxlint": true,
+  
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
+  
+    "[javascript]": {
+      "editor.defaultFormatter": "oxc.oxc-vscode"
+    },
+    "[javascriptreact]": {
+      "editor.defaultFormatter": "oxc.oxc-vscode"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "oxc.oxc-vscode"
+    },
+    "[jsonc]": {
+      "editor.defaultFormatter": "oxc.oxc-vscode"
+    },
+    "[css]": {
+      "editor.defaultFormatter": "oxc.oxc-vscode"
+    }
+  }
