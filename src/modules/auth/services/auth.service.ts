@@ -43,7 +43,7 @@ export class AuthService implements IAuthService {
     const user = await this.userRepository.findByEmailOrUsername(data.userName);
 
     if (!user) {
-      throw new NotFoundException(ERROR_USER.NOT_FOUND);
+      throw new NotFoundException(ERROR_USER.INVALID_CREDENTIALS);
     }
 
     const isMatch = await this.helperEncryptionService.match(
