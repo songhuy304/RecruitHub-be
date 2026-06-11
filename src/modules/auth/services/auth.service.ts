@@ -27,6 +27,7 @@ import { AuthMailService } from './auth.mail.service';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { ConfigService } from '@nestjs/config';
+import { EAuthProvider } from '@/common/enums';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -45,10 +46,18 @@ export class AuthService implements IAuthService {
   public async login(
     data: LoginDto,
   ): Promise<ApiResponseDto<LoginResponseDto>> {
-    const user = await this.userRepository.findByEmailOrUsername(data.userName);
+    const user = await this.userRepository.findByEmailOrUsername(
+      data.identifier,
+    );
 
     if (!user) {
       throw new UnauthorizedException(ERROR_USER.INVALID_CREDENTIALS);
+    }
+
+    if (user.provider !== EAuthProvider.LOCAL) {
+      throw new UnauthorizedException(
+        `This account uses ${user.provider} login`,
+      );
     }
 
     const isMatch = await this.helperEncryptionService.match(
@@ -208,7 +217,9 @@ export class AuthService implements IAuthService {
     return token;
   }
 
-  public async verifyOAuthToken(token: string): Promise<OauthResponseDto> {
+  public async verifyOAuthToken(
+    token: string,
+  ): Promise<ApiResponseDto<OauthResponseDto>> {
     try {
       const payload = await this.helperEncryptionService.verifyToken<{
         userId: number;
@@ -229,7 +240,7 @@ export class AuthService implements IAuthService {
 
       await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
 
-      return tokens;
+      return ApiResponseDto.success(tokens);
     } catch (error) {
       this.logger.error(error);
 

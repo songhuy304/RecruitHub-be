@@ -48,7 +48,7 @@ export class OauthController {
     return res.redirect(302, redirectUrl);
   }
 
-  @Post('/oauth/verify')
+  @Post('/verify')
   @PublicRoute()
   async verifyOauth(@Body() body: VerifyOauthDto) {
     return this.authService.verifyOAuthToken(body.token);

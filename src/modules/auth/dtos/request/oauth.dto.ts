@@ -1,5 +1,6 @@
 import { EAuthProvider } from '@/common/enums';
-import { IsEmail, IsEnum, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
 export class UserOauthDto {
   @IsString()
@@ -17,6 +18,10 @@ export class UserOauthDto {
 }
 
 export class VerifyOauthDto {
+  @ApiProperty({
+    required: true,
+  })
   @IsString()
+  @IsNotEmpty()
   token: string;
 }
