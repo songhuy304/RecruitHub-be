@@ -14,10 +14,8 @@ export interface IAuthTokenResponse {
 export interface ITempTokenOptions {
   expiresIn?: StringValue;
   secret?: string;
-  audience?: string;
 }
 
 export interface IVerifyTokenOptions {
   secret?: string;
-  audience?: string;
 }

@@ -13,9 +13,9 @@ import { GithubAuthGuard, GoogleAuthGuard } from '@/common/guard/oauth.guard';
 import { PublicRoute } from '@/common/guard/decorator';
 import { UserOauthDto, VerifyOauthDto } from '../dtos/request';
 import { Request, Response } from 'express';
-import { ApiExcludeController } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 
-@ApiExcludeController()
+@ApiTags('Auth')
 @Controller('auth')
 export class OauthController {
   constructor(private readonly authService: AuthService) {}
@@ -30,7 +30,7 @@ export class OauthController {
   @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
     const user = req['user'] as UserOauthDto;
-    const redirectUrl = await this.buildRedirectUrl(user);
+    const redirectUrl = await this.authService.validateOAuthLogin(user);
     return res.redirect(302, redirectUrl);
   }
 
@@ -44,7 +44,7 @@ export class OauthController {
   @UseGuards(GithubAuthGuard)
   async githubAuthRedirect(@Req() req: Request, @Res() res: Response) {
     const user = req['user'] as UserOauthDto;
-    const redirectUrl = await this.buildRedirectUrl(user);
+    const redirectUrl = await this.authService.validateOAuthLogin(user);
     return res.redirect(302, redirectUrl);
   }
 
@@ -54,8 +54,8 @@ export class OauthController {
     return this.authService.verifyOAuthToken(body.token);
   }
 
-  private async buildRedirectUrl(user: UserOauthDto): Promise<string> {
-    const token = await this.authService.validateOAuthLogin(user);
-    return `${process.env.FRONTEND_URL}/verify?token=${token}`;
-  }
+  // private async buildRedirectUrl(user: UserOauthDto): Promise<string> {
+  //   const token = await this.authService.validateOAuthLogin(user);
+  //   return `${process.env.FRONTEND_URL}/verify?token=${token}`;
+  // }
 }

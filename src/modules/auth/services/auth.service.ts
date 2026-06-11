@@ -26,17 +26,21 @@ import { IAuthService } from '../interfaces/auth.service.interface';
 import { AuthMailService } from './auth.mail.service';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
-import { ETokenType } from '../enums';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService implements IAuthService {
   private readonly logger = new Logger(AuthService.name);
+  private frontendUrl: string;
 
   constructor(
     private readonly userRepository: UserRepositoryImpl,
     private readonly helperEncryptionService: HelperEncryptionService,
     private readonly authMailService: AuthMailService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.frontendUrl = this.configService.getOrThrow('app.frontend');
+  }
 
   public async login(
     data: LoginDto,
@@ -44,7 +48,7 @@ export class AuthService implements IAuthService {
     const user = await this.userRepository.findByEmailOrUsername(data.userName);
 
     if (!user) {
-      throw new NotFoundException(ERROR_USER.INVALID_CREDENTIALS);
+      throw new UnauthorizedException(ERROR_USER.INVALID_CREDENTIALS);
     }
 
     const isMatch = await this.helperEncryptionService.match(
@@ -197,12 +201,9 @@ export class AuthService implements IAuthService {
       throw new NotFoundException(ERROR_USER.NOT_FOUND);
     }
 
-    const token = await this.helperEncryptionService.createToken(
-      {
-        userId: user.id,
-      },
-      { audience: ETokenType.VERIFY_OAUTH },
-    );
+    const token = await this.helperEncryptionService.createToken({
+      userId: user.id,
+    });
 
     return token;
   }
@@ -211,7 +212,7 @@ export class AuthService implements IAuthService {
     try {
       const payload = await this.helperEncryptionService.verifyToken<{
         userId: number;
-      }>(token, { audience: ETokenType.VERIFY_OAUTH });
+      }>(token);
 
       const user = await this.userRepository.findById(payload.userId);
 
@@ -249,19 +250,10 @@ export class AuthService implements IAuthService {
       {
         userId: user.id,
       },
-      { audience: ETokenType.VERIFY_OAUTH, expiresIn: '15m' },
+      { expiresIn: '15m' },
     );
 
-    // const tokens = await this.helperEncryptionService.createJwtTokens({
-    //   userId: user.id,
-    //   role: user.role,
-    //   teamId: user.teamId ?? null,
-    //   teamRole: user.teamRole ?? null,
-    // });
-
-    // await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
-
-    return token;
+    return `${this.frontendUrl}/verify?token=${token}`;
   }
 
   private async createOAuthUser(payload: UserOauthDto): Promise<UserEntity> {
@@ -286,11 +278,11 @@ export class AuthService implements IAuthService {
   private async upsertUserRefreshToken(
     userId: number,
     refreshToken: string | null,
-  ): Promise<void> {
-    const hash = await this.helperEncryptionService.createHash(refreshToken);
+  ) {
+    const hash = refreshToken
+      ? await this.helperEncryptionService.createHash(refreshToken)
+      : null;
 
-    await this.userRepository.update(userId, {
-      refreshToken: hash,
-    });
+    await this.userRepository.update(userId, { refreshToken: hash });
   }
 }

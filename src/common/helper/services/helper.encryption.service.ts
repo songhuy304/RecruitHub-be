@@ -115,22 +115,20 @@ export class HelperEncryptionService implements IHelperEncryptionService {
 
   public async createToken<T extends object>(
     payload: T,
-    options: ITempTokenOptions,
+    options?: ITempTokenOptions,
   ): Promise<string> {
     return this.jwtService.signAsync(payload, {
-      secret: options.secret ?? this.commonTokenSecret,
-      expiresIn: options.expiresIn,
-      audience: options.audience,
+      secret: options?.secret ?? this.commonTokenSecret,
+      expiresIn: options?.expiresIn,
     });
   }
 
   public async verifyToken<T extends object>(
     token: string,
-    options: IVerifyTokenOptions,
+    options?: IVerifyTokenOptions,
   ): Promise<T> {
     return this.jwtService.verifyAsync<T>(token, {
-      secret: options.secret ?? this.commonTokenSecret,
-      audience: options.audience,
+      secret: options?.secret ?? this.commonTokenSecret,
     });
   }
 
