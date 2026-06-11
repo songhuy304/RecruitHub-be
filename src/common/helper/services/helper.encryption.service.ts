@@ -7,6 +7,8 @@ import { StringValue } from 'ms';
 import {
   IAuthTokenResponse,
   IEncryptDataPayload,
+  ITempTokenOptions,
+  IVerifyTokenOptions,
 } from '../interfaces/encryption.interface';
 import * as argon2 from 'argon2';
 import {
@@ -30,6 +32,7 @@ export class HelperEncryptionService implements IHelperEncryptionService {
   private readonly refreshTokenSecret: string;
   private readonly accessTokenExpire: string;
   private readonly refreshTokenExpire: string;
+  private readonly commonTokenSecret: string;
 
   private readonly forgotPasswordSecret: string;
   private readonly forgotPasswordExpire: string;
@@ -57,6 +60,9 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     this.forgotPasswordExpire = this.configService.getOrThrow<string>(
       'auth.forgotPassword.expires',
     );
+    this.commonTokenSecret = this.configService.getOrThrow<string>(
+      'auth.commonToken.secret',
+    );
   }
 
   public async createJwtTokens(
@@ -68,35 +74,34 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     ]);
     return { accessToken, refreshToken };
   }
-
-  public async createAccessToken(payload: IAuthUser): Promise<string> {
-    return this.jwtService.signAsync(payload, {
+  public createAccessToken(payload: IAuthUser): Promise<string> {
+    return this.createToken(payload, {
       secret: this.accessTokenSecret,
       expiresIn: this.accessTokenExpire as StringValue,
     });
   }
 
-  public async createRefreshToken(payload: IAuthUser): Promise<string> {
-    return this.jwtService.signAsync(payload, {
+  public createRefreshToken(payload: IAuthUser): Promise<string> {
+    return this.createToken(payload, {
       secret: this.refreshTokenSecret,
       expiresIn: this.refreshTokenExpire as StringValue,
     });
   }
 
-  public async verifyAccessToken(token: string): Promise<IAuthUser> {
-    return this.jwtService.verifyAsync<IAuthUser>(token, {
+  public verifyAccessToken(token: string): Promise<IAuthUser> {
+    return this.verifyToken<IAuthUser>(token, {
       secret: this.accessTokenSecret,
     });
   }
 
-  public async verifyRefreshToken(token: string): Promise<IAuthUser> {
-    return this.jwtService.verifyAsync<IAuthUser>(token, {
+  public verifyRefreshToken(token: string): Promise<IAuthUser> {
+    return this.verifyToken<IAuthUser>(token, {
       secret: this.refreshTokenSecret,
     });
   }
 
-  public async createForgotPasswordToken(payload: IAuthUser): Promise<string> {
-    return this.jwtService.signAsync(payload, {
+  public createForgotPasswordToken(payload: IAuthUser): Promise<string> {
+    return this.createToken(payload, {
       secret: this.forgotPasswordSecret,
       expiresIn: this.forgotPasswordExpire as StringValue,
     });
@@ -106,6 +111,24 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     return this.jwtService.verifyAsync<IAuthUser>(token, {
       secret: this.forgotPasswordSecret,
     });
+  }
+
+  private async createToken<T extends object>(
+    payload: T,
+    options: ITempTokenOptions,
+  ): Promise<string> {
+    return this.jwtService.signAsync(payload, {
+      secret: options.secret ?? this.commonTokenSecret,
+      expiresIn: options.expiresIn,
+      audience: options.audience,
+    });
+  }
+
+  private async verifyToken<T extends object>(
+    token: string,
+    options: IVerifyTokenOptions,
+  ): Promise<T> {
+    return this.jwtService.verifyAsync<T>(token, options);
   }
 
   public createHash(password: string): Promise<string> {

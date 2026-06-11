@@ -1,3 +1,4 @@
+import { StringValue } from 'ms';
 export interface IEncryptDataPayload {
   iv: string;
   data: string;
@@ -8,4 +9,15 @@ export interface IEncryptDataPayload {
 export interface IAuthTokenResponse {
   accessToken: string;
   refreshToken: string;
+}
+
+export interface ITempTokenOptions {
+  expiresIn?: StringValue;
+  secret?: string;
+  audience?: string;
+}
+
+export interface IVerifyTokenOptions {
+  secret: string;
+  audience?: string;
 }

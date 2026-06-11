@@ -28,5 +28,9 @@ export default registerAs(
       expires: process.env.AUTH_FORGOT_PASSWORD_EXP,
       secret: process.env.AUTH_FORGOT_PASSWORD_SECRET,
     },
+
+    commonToken: {
+      secret: process.env.AUTH_COMMON_TOKEN_SECRET,
+    },
   }),
 );

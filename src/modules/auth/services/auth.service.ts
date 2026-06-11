@@ -239,6 +239,4 @@ export class AuthService implements IAuthService {
       refreshToken: hash,
     });
   }
-
-  // private async verifyEmail(email: string): Promise<void> {}
 }

@@ -7,7 +7,7 @@ import { Request, Response } from 'express';
 import { ApiExcludeController } from '@nestjs/swagger';
 
 @ApiExcludeController()
-@Controller('auth/')
+@Controller('auth')
 export class OauthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -40,7 +40,8 @@ export class OauthController {
   }
 
   private async validateOauth(user: UserOauthDto): Promise<string> {
-    const { accessToken } = await this.authService.validateOAuthLogin(user);
-    return `${process.env.FRONTEND_URL}?accessToken=${accessToken}`;
+    const { accessToken, refreshToken } =
+      await this.authService.validateOAuthLogin(user);
+    return `${process.env.FRONTEND_URL}?accessToken=${accessToken}&refreshToken=${refreshToken}`;
   }
 }
