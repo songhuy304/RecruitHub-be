@@ -13,6 +13,7 @@ import { AuthRefreshResponseDto, LoginResponseDto } from '../dtos/response';
 import { AuthService } from '../services/auth.service';
 import { AuthUser } from '@/common/guard/decorator';
 import { JwtRefreshGuard } from '@/common/guard/jwt.refresh.guard';
+import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -21,6 +22,11 @@ export class AuthPublicController {
 
   @PublicRoute()
   @Post('/login')
+  @ApiEndpoint({
+    summary: 'User login',
+    serialization: LoginResponseDto,
+    messageKey: 'auth.success.loggedIn',
+  })
   public async login(
     @Body() payload: LoginDto,
   ): Promise<ApiResponseDto<LoginResponseDto>> {

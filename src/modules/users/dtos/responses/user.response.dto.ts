@@ -8,7 +8,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { ERole } from '@/common/enums';
+import { ERole, ETeamRole } from '@/common/enums';
 
 export class UserResponseDto {
   @ApiProperty({ example: 1 })
@@ -53,6 +53,8 @@ export class UserResponseDto {
   @IsOptional()
   teamId?: number;
 
+  @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER })
   @Expose()
-  teamRole?: ERole;
+  @IsOptional()
+  teamRole?: ETeamRole;
 }

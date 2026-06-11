@@ -1,6 +1,7 @@
 import { IApiBaseResponse } from '@/common/response/response.interface';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { IsString } from 'class-validator';
 
 export class ApiGenericResponseDto implements IApiBaseResponse {
   @ApiProperty({
@@ -15,6 +16,7 @@ export class ApiGenericResponseDto implements IApiBaseResponse {
     example: 'Operation completed successfully',
   })
   @Expose()
+  @IsString()
   message: string;
 
   constructor(message: string, success: boolean) {
@@ -32,6 +34,7 @@ export class ApiGenericResponseDto implements IApiBaseResponse {
 }
 
 export class ApiResponseDto<T> extends ApiGenericResponseDto {
+  @ApiPropertyOptional({ description: 'Response data or error details' })
   @Expose()
   data: T | null;
 
