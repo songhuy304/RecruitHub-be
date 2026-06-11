@@ -18,6 +18,6 @@ export interface ITempTokenOptions {
 }
 
 export interface IVerifyTokenOptions {
-  secret: string;
+  secret?: string;
   audience?: string;
 }

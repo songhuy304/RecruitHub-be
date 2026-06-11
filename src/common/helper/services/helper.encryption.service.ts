@@ -113,7 +113,7 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     });
   }
 
-  private async createToken<T extends object>(
+  public async createToken<T extends object>(
     payload: T,
     options: ITempTokenOptions,
   ): Promise<string> {
@@ -124,11 +124,14 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     });
   }
 
-  private async verifyToken<T extends object>(
+  public async verifyToken<T extends object>(
     token: string,
     options: IVerifyTokenOptions,
   ): Promise<T> {
-    return this.jwtService.verifyAsync<T>(token, options);
+    return this.jwtService.verifyAsync<T>(token, {
+      secret: options.secret ?? this.commonTokenSecret,
+      audience: options.audience,
+    });
   }
 
   public createHash(password: string): Promise<string> {

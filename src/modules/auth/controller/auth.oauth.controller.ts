@@ -1,8 +1,17 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+// oauth.controller.ts - thêm endpoint verify
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { GithubAuthGuard, GoogleAuthGuard } from '@/common/guard/oauth.guard';
 import { PublicRoute } from '@/common/guard/decorator';
-import { UserOauthDto } from '../dtos/request';
+import { UserOauthDto, VerifyOauthDto } from '../dtos/request';
 import { Request, Response } from 'express';
 import { ApiExcludeController } from '@nestjs/swagger';
 
@@ -21,7 +30,7 @@ export class OauthController {
   @UseGuards(GoogleAuthGuard)
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
     const user = req['user'] as UserOauthDto;
-    const redirectUrl = await this.validateOauth(user);
+    const redirectUrl = await this.buildRedirectUrl(user);
     return res.redirect(302, redirectUrl);
   }
 
@@ -35,13 +44,18 @@ export class OauthController {
   @UseGuards(GithubAuthGuard)
   async githubAuthRedirect(@Req() req: Request, @Res() res: Response) {
     const user = req['user'] as UserOauthDto;
-    const redirectUrl = await this.validateOauth(user);
+    const redirectUrl = await this.buildRedirectUrl(user);
     return res.redirect(302, redirectUrl);
   }
 
-  private async validateOauth(user: UserOauthDto): Promise<string> {
-    const { accessToken, refreshToken } =
-      await this.authService.validateOAuthLogin(user);
-    return `${process.env.FRONTEND_URL}?accessToken=${accessToken}&refreshToken=${refreshToken}`;
+  @Post('/oauth/verify')
+  @PublicRoute()
+  async verifyOauth(@Body() body: VerifyOauthDto) {
+    return this.authService.verifyOAuthToken(body.token);
+  }
+
+  private async buildRedirectUrl(user: UserOauthDto): Promise<string> {
+    const token = await this.authService.validateOAuthLogin(user);
+    return `${process.env.FRONTEND_URL}/verify?token=${token}`;
   }
 }

@@ -26,6 +26,7 @@ import { IAuthService } from '../interfaces/auth.service.interface';
 import { AuthMailService } from './auth.mail.service';
 import { TokenExpiredError } from '@nestjs/jwt';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
+import { ETokenType } from '../enums';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -189,25 +190,78 @@ export class AuthService implements IAuthService {
     return tokens;
   }
 
-  public async validateOAuthLogin(
-    payload: UserOauthDto,
-  ): Promise<OauthResponseDto> {
+  public async createOAuthToken(payload: UserOauthDto): Promise<string> {
+    const user = await this.userRepository.findByEmail(payload.email);
+
+    if (!user) {
+      throw new NotFoundException(ERROR_USER.NOT_FOUND);
+    }
+
+    const token = await this.helperEncryptionService.createToken(
+      {
+        userId: user.id,
+      },
+      { audience: ETokenType.VERIFY_OAUTH },
+    );
+
+    return token;
+  }
+
+  public async verifyOAuthToken(token: string): Promise<OauthResponseDto> {
+    try {
+      const payload = await this.helperEncryptionService.verifyToken<{
+        userId: number;
+      }>(token, { audience: ETokenType.VERIFY_OAUTH });
+
+      const user = await this.userRepository.findById(payload.userId);
+
+      if (!user) {
+        throw new NotFoundException(ERROR_USER.NOT_FOUND);
+      }
+
+      const tokens = await this.helperEncryptionService.createJwtTokens({
+        userId: user.id,
+        role: user.role,
+        teamId: user.teamId ?? null,
+        teamRole: user.teamRole ?? null,
+      });
+
+      await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
+
+      return tokens;
+    } catch (error) {
+      this.logger.error(error);
+
+      if (error instanceof NotFoundException) throw error;
+
+      throw new BadRequestException(ERROR_AUTH.TOKEN_INVALID);
+    }
+  }
+
+  public async validateOAuthLogin(payload: UserOauthDto): Promise<string> {
     let user = await this.userRepository.findByEmail(payload.email);
 
     if (!user) {
       user = await this.createOAuthUser(payload);
     }
 
-    const tokens = await this.helperEncryptionService.createJwtTokens({
-      userId: user.id,
-      role: user.role,
-      teamId: user.teamId ?? null,
-      teamRole: user.teamRole ?? null,
-    });
+    const token = await this.helperEncryptionService.createToken(
+      {
+        userId: user.id,
+      },
+      { audience: ETokenType.VERIFY_OAUTH, expiresIn: '15m' },
+    );
 
-    await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
+    // const tokens = await this.helperEncryptionService.createJwtTokens({
+    //   userId: user.id,
+    //   role: user.role,
+    //   teamId: user.teamId ?? null,
+    //   teamRole: user.teamRole ?? null,
+    // });
 
-    return tokens;
+    // await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
+
+    return token;
   }
 
   private async createOAuthUser(payload: UserOauthDto): Promise<UserEntity> {

@@ -15,3 +15,8 @@ export class UserOauthDto {
   @IsEnum(EAuthProvider)
   provider: EAuthProvider;
 }
+
+export class VerifyOauthDto {
+  @IsString()
+  token: string;
+}
