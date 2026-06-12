@@ -28,6 +28,7 @@ import { TokenExpiredError } from '@nestjs/jwt';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { ConfigService } from '@nestjs/config';
 import { EAuthProvider } from '@/common/enums';
+import { CacheService } from '@/common/cache/services/cache.service';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -39,6 +40,7 @@ export class AuthService implements IAuthService {
     private readonly helperEncryptionService: HelperEncryptionService,
     private readonly authMailService: AuthMailService,
     private readonly configService: ConfigService,
+    private readonly cacheService: CacheService,
   ) {
     this.frontendUrl = this.configService.getOrThrow('app.frontend');
   }
@@ -295,5 +297,34 @@ export class AuthService implements IAuthService {
       : null;
 
     await this.userRepository.update(userId, { refreshToken: hash });
+  }
+
+  public async cacheGetDemo() {
+    const key = 'demo-key';
+
+    const value = await this.cacheService.get(key);
+
+    return {
+      cachedValue: value,
+    };
+  }
+
+  public async cacheSetDemo() {
+    const key = 'demo-key';
+
+    await this.cacheService.set(key, {
+      message: 'hello redis',
+      time: new Date().toISOString(),
+    });
+
+    return 'SET done';
+  }
+
+  public async cacheDeleteDemo() {
+    const key = 'demo-key';
+
+    await this.cacheService.del(key);
+
+    return 'DELETE done';
   }
 }
