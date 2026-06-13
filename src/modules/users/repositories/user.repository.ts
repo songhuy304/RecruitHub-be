@@ -4,6 +4,7 @@ import { Repository as TypeOrmRepository } from 'typeorm';
 import { UserEntity } from '@/common/entities/user.entity';
 import { HelperQueryService } from '@/common/helper/services/helper.query.service';
 import { IUserRepository } from '../interfaces/user.repository.interface';
+import { EAuthProvider } from '@/common/enums';
 
 @Injectable()
 export class UserRepositoryImpl extends IUserRepository {
@@ -15,9 +16,21 @@ export class UserRepositoryImpl extends IUserRepository {
     super(repo, helperQuery);
   }
 
-  async findByEmailOrUsername(userName: string): Promise<UserEntity | null> {
+  async findByEmailOrUsername(
+    userName: string,
+    provider?: EAuthProvider,
+  ): Promise<UserEntity | null> {
     return this.repo.findOne({
-      where: [{ userName }, { email: userName }],
+      where: [
+        {
+          userName,
+          ...(provider && { provider }),
+        },
+        {
+          email: userName,
+          ...(provider && { provider }),
+        },
+      ],
     });
   }
 

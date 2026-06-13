@@ -50,16 +50,11 @@ export class AuthService implements IAuthService {
   ): Promise<ApiResponseDto<LoginResponseDto>> {
     const user = await this.userRepository.findByEmailOrUsername(
       data.identifier,
+      EAuthProvider.LOCAL,
     );
 
     if (!user) {
       throw new UnauthorizedException(ERROR_USER.INVALID_CREDENTIALS);
-    }
-
-    if (user.provider !== EAuthProvider.LOCAL) {
-      throw new UnauthorizedException(
-        `This account uses ${user.provider} login`,
-      );
     }
 
     const isMatch = await this.helperEncryptionService.match(
