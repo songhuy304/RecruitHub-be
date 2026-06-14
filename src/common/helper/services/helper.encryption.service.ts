@@ -100,19 +100,6 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     });
   }
 
-  public createForgotPasswordToken(payload: IAuthUser): Promise<string> {
-    return this.createToken(payload, {
-      secret: this.forgotPasswordSecret,
-      expiresIn: this.forgotPasswordExpire as StringValue,
-    });
-  }
-
-  public async verifyForgotPasswordToken(token: string): Promise<IAuthUser> {
-    return this.jwtService.verifyAsync<IAuthUser>(token, {
-      secret: this.forgotPasswordSecret,
-    });
-  }
-
   public async createToken<T extends object>(
     payload: T,
     options?: ITempTokenOptions,

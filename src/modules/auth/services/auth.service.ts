@@ -24,11 +24,12 @@ import {
 } from '../dtos/response';
 import { IAuthService } from '../interfaces/auth.service.interface';
 import { AuthMailService } from './auth.mail.service';
-import { TokenExpiredError } from '@nestjs/jwt';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { ConfigService } from '@nestjs/config';
 import { EAuthProvider } from '@/common/enums';
 import { CacheService } from '@/common/cache/services/cache.service';
+import { generateCode } from '@/common/utils';
+import { redisKey } from '@/common/constants/redis.constant';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -112,16 +113,10 @@ export class AuthService implements IAuthService {
     if (!user) {
       throw new NotFoundException(ERROR_USER.NOT_FOUND);
     }
-
-    const token = await this.helperEncryptionService.createForgotPasswordToken({
-      userId: user.id,
-      role: user.role,
-      teamId: user.teamId ?? null,
-      teamRole: user.teamRole ?? null,
-    });
-
+    const token = generateCode(32);
+    const key = redisKey.forgotPassword(token);
+    await this.cacheService.set(key, user.id, 600);
     await this.authMailService.forgotPasswordMail(user, token);
-
     return ApiGenericResponseDto.success(
       'Send email to reset password successfully',
     );
@@ -130,39 +125,20 @@ export class AuthService implements IAuthService {
   public async resetPassword(
     payload: ResetPasswordDto,
   ): Promise<ApiGenericResponseDto> {
-    const { token } = payload;
+    const { token, password } = payload;
+    const key = redisKey.forgotPassword(token);
+    const userId = await this.cacheService.get<number>(key);
 
-    let userId: number;
-
-    try {
-      const jwt =
-        await this.helperEncryptionService.verifyForgotPasswordToken(token);
-
-      userId = jwt.userId;
-    } catch (error) {
-      this.logger.error(error);
-
-      if (error instanceof TokenExpiredError) {
-        throw new BadRequestException(ERROR_AUTH.TOKEN_EXPIRED);
-      }
-
+    if (!userId) {
       throw new BadRequestException(ERROR_AUTH.TOKEN_INVALID);
     }
 
-    const user = await this.userRepository.findById(userId);
+    const passwordHash =
+      await this.helperEncryptionService.createHash(password);
 
-    if (!user) {
-      throw new NotFoundException(ERROR_USER.NOT_FOUND);
-    }
-
-    const passwordHash = await this.helperEncryptionService.createHash(
-      payload.password,
-    );
-
-    await this.userRepository.update(user.id, {
+    await this.userRepository.update(userId, {
       password: passwordHash,
     });
-
     return ApiGenericResponseDto.success('Reset password success');
   }
 
