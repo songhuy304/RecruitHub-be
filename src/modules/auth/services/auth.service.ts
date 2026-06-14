@@ -139,6 +139,8 @@ export class AuthService implements IAuthService {
     await this.userRepository.update(userId, {
       password: passwordHash,
     });
+
+    await this.cacheService.del(key);
     return ApiGenericResponseDto.success('Reset password success');
   }
 
