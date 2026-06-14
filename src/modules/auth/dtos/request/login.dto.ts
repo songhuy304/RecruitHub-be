@@ -1,6 +1,5 @@
-import { REGEX_PASSWORD } from '@/common/constants';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty({
@@ -15,6 +14,5 @@ export class LoginDto {
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(REGEX_PASSWORD)
   public password: string;
 }

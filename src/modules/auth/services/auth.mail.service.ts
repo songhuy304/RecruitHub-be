@@ -20,7 +20,7 @@ export class AuthMailService implements IAuthMailService {
     token: string,
   ): Promise<void> {
     try {
-      const resetLink = `${this.frontendUrl}/reset-password?token=${token}`;
+      const resetLink = `${this.frontendUrl}/auth/reset-password?token=${token}`;
 
       await this.helperMailService.sendEmail({
         to: user.email,
