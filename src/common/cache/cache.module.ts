@@ -11,7 +11,12 @@ import { REDIS_CLIENT } from './constants/cache.constant';
       provide: REDIS_CLIENT,
       inject: [ConfigService],
       useFactory: (configService: ConfigService): Redis => {
-        return new Redis(configService.getOrThrow<string>('redis.url'));
+        return new Redis({
+          host: configService.getOrThrow<string>('redis.host'),
+          port: Number(configService.getOrThrow<string>('redis.port')),
+          password: configService.get<string>('redis.password'),
+          tls: configService.get<boolean>('redis.tls') ? {} : undefined,
+        });
       },
     },
     CacheService,

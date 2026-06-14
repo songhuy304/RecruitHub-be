@@ -1,22 +1,29 @@
 import { REGEX_PASSWORD } from '@/common/constants';
 import { UserEntity } from '@/common/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 
 export class SignupDto implements Partial<UserEntity> {
-  @ApiProperty({
-    required: true,
-  })
   @IsString()
-  @IsNotEmpty()
-  public userName: string;
+  @Length(6, 30)
+  @Matches(/^[a-zA-Z0-9_]+$/)
+  userName: string;
 
   @ApiProperty({
     required: true,
   })
   @IsString()
   @IsNotEmpty()
-  @Matches(REGEX_PASSWORD)
+  @Matches(REGEX_PASSWORD, {
+    message:
+      'Password must contain at least 8 characters, one uppercase, one lowercase, one number and one special character',
+  })
   public password: string;
 
   @ApiProperty({
@@ -30,8 +37,9 @@ export class SignupDto implements Partial<UserEntity> {
     required: true,
   })
   @IsString()
+  @Length(6, 100)
   @IsNotEmpty()
-  public fullName: string;
+  fullName: string;
 
   @IsOptional()
   @IsString()
