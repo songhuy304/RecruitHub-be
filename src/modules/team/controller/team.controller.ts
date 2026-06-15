@@ -32,6 +32,7 @@ export class TeamController {
     return this.teamService.getTeam(user);
   }
 
+  @TeamRoles(ETeamRole.OWNER)
   @Get('invite')
   async getInvite(@AuthUser() user: IAuthUser) {
     return this.teamService.getInviteCode(user);
@@ -58,14 +59,20 @@ export class TeamController {
 
   @TeamRoles(ETeamRole.OWNER)
   @Post('/join-requests/:id/approve')
-  async approveJoinRequest(@Param('id', ParseIntPipe) id: number) {
-    return this.teamRequestService.approveJoinRequest(id);
+  async approveJoinRequest(
+    @Param('id', ParseIntPipe) id: number,
+    @AuthUser() user: IAuthUser,
+  ) {
+    return this.teamRequestService.approveJoinRequest(id, user);
   }
 
   @TeamRoles(ETeamRole.OWNER)
   @Post('/join-requests/:id/reject')
-  async rejectJoinRequest(@Param('id', ParseIntPipe) id: number) {
-    return this.teamRequestService.rejectJoinRequest(id);
+  async rejectJoinRequest(
+    @Param('id', ParseIntPipe) id: number,
+    @AuthUser() user: IAuthUser,
+  ) {
+    return this.teamRequestService.rejectJoinRequest(id, user);
   }
 
   @Post('/leave')
