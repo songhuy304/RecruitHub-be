@@ -91,7 +91,7 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     options?: ITempTokenOptions,
   ): Promise<string> {
     return this.jwtService.signAsync(payload, {
-      secret: options?.secret,
+      secret: options?.secret ?? this.accessTokenSecret,
       expiresIn: options?.expiresIn,
     });
   }
@@ -101,7 +101,7 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     options?: IVerifyTokenOptions,
   ): Promise<T> {
     return this.jwtService.verifyAsync<T>(token, {
-      secret: options?.secret,
+      secret: options?.secret ?? this.accessTokenSecret,
     });
   }
 
