@@ -176,7 +176,9 @@ export class AuthService implements IAuthService {
   }
 
   public async createOAuthToken(payload: UserOauthDto): Promise<string> {
-    const user = await this.userRepository.findByEmail(payload.email);
+    const user = await this.userRepository.findOne({
+      where: { email: payload.email, provider: payload.provider },
+    });
 
     if (!user) {
       throw new NotFoundException(ERROR_USER.NOT_FOUND);
@@ -213,9 +215,7 @@ export class AuthService implements IAuthService {
       return ApiResponseDto.success(tokens);
     } catch (error) {
       this.logger.error(error);
-
       if (error instanceof NotFoundException) throw error;
-
       throw new BadRequestException(ERROR_AUTH.TOKEN_INVALID);
     }
   }
@@ -234,7 +234,7 @@ export class AuthService implements IAuthService {
       { expiresIn: '15m' },
     );
 
-    return `${this.frontendUrl}/verify?token=${token}`;
+    return `${this.frontendUrl}/auth/verify?token=${token}`;
   }
 
   private async createOAuthUser(payload: UserOauthDto): Promise<UserEntity> {
@@ -260,10 +260,7 @@ export class AuthService implements IAuthService {
     userId: number,
     refreshToken: string | null,
   ) {
-    const hash = refreshToken
-      ? await this.helperEncryptionService.createHash(refreshToken)
-      : null;
-
+    const hash = refreshToken ? refreshToken : null;
     await this.userRepository.update(userId, { refreshToken: hash });
   }
 }
