@@ -3,11 +3,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BaseEntity } from '@/common/entities/base.entity';
 import { EAuthProvider, ERole, ETeamRole } from '@/common/enums';
 import { TeamEntity } from '@/common/entities/team.entity';
+import { TokenEntity } from './token';
 
 @Entity('users')
 export class UserEntity extends BaseEntity {
@@ -57,4 +59,7 @@ export class UserEntity extends BaseEntity {
   })
   @JoinColumn({ name: 'teamId' })
   team: TeamEntity;
+
+  @OneToMany(() => TokenEntity, (token) => token.user)
+  tokens: TokenEntity[];
 }
