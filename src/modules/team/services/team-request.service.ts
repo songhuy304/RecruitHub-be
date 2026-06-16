@@ -1,6 +1,6 @@
 import { ERROR_TEAM, ERROR_USER } from '@/common/constants';
 import { TeamRequestEntity, UserEntity } from '@/common/entities';
-import { ETeamRequestStatus } from '@/common/enums';
+import { ETeamRequestStatus, ETeamRole } from '@/common/enums';
 import {
   BadRequestException,
   NotFoundException,
@@ -63,7 +63,13 @@ export class TeamRequestService implements ITeamRequestService {
     query: JoinRequestDto,
     authUser: IAuthUser,
   ): Promise<ApiResponseDto<TeamRequestResponseDto[]>> {
-    const team = await this.teamRepo.findOneBy({ id: authUser.teamId });
+    const user = await this.userRepo.findOneBy({ id: authUser.userId });
+
+    if (!user?.teamId) {
+      throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
+    }
+
+    const team = await this.teamRepo.findOneBy({ id: user.teamId });
 
     if (!team) throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
 
@@ -82,8 +88,16 @@ export class TeamRequestService implements ITeamRequestService {
     return ApiResponseDto.success(TeamRequestMapper.mapFromArray(result));
   }
 
-  async approveJoinRequest(requestId: number): Promise<ApiGenericResponseDto> {
+  async approveJoinRequest(
+    requestId: number,
+    authUser: IAuthUser,
+  ): Promise<ApiGenericResponseDto> {
+    const owner = await this.userRepo.findOneBy({ id: authUser.userId });
     const request = await this.findRequestById(requestId);
+
+    if (!owner?.teamId || request.team.id !== owner.teamId) {
+      throw new BadRequestException(ERROR_TEAM.NOT_IN_TEAM);
+    }
 
     if (request.status !== ETeamRequestStatus.PENDING) {
       throw new BadRequestException(ERROR_TEAM.REQUEST_ALREADY_PROCESSED);
@@ -92,6 +106,7 @@ export class TeamRequestService implements ITeamRequestService {
     await this.dataSource.transaction(async (manager) => {
       await manager.update(UserEntity, request.user.id, {
         teamId: request.team.id,
+        teamRole: ETeamRole.MEMBER,
       });
       await manager.update(TeamRequestEntity, request.id, {
         status: ETeamRequestStatus.APPROVED,
@@ -101,8 +116,16 @@ export class TeamRequestService implements ITeamRequestService {
     return ApiGenericResponseDto.success();
   }
 
-  async rejectJoinRequest(requestId: number): Promise<ApiGenericResponseDto> {
+  async rejectJoinRequest(
+    requestId: number,
+    authUser: IAuthUser,
+  ): Promise<ApiGenericResponseDto> {
+    const owner = await this.userRepo.findOneBy({ id: authUser.userId });
     const request = await this.findRequestById(requestId);
+
+    if (!owner?.teamId || request.team.id !== owner.teamId) {
+      throw new BadRequestException(ERROR_TEAM.NOT_IN_TEAM);
+    }
 
     if (request.status !== ETeamRequestStatus.PENDING) {
       throw new BadRequestException(ERROR_TEAM.REQUEST_ALREADY_PROCESSED);

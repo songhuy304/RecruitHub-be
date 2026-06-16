@@ -4,9 +4,11 @@ import { JwtAccessGuard } from './jwt.access.guard';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TeamRolesGuard } from './team-role.guard';
+import { UserModule } from '@/modules/users/user.module';
 
 @Module({
   imports: [
+    UserModule,
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

@@ -70,8 +70,6 @@ export class AuthService implements IAuthService {
     const tokens = await this.helperEncryptionService.createJwtTokens({
       role: user.role,
       userId: user.id,
-      teamId: user.teamId ?? null,
-      teamRole: user.teamRole ?? null,
     });
 
     await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
@@ -166,8 +164,6 @@ export class AuthService implements IAuthService {
     const tokenPayload: IAuthUser = {
       userId: payload.userId,
       role: payload.role,
-      teamId: payload.teamId,
-      teamRole: payload.teamRole,
     };
 
     const tokens =
@@ -209,8 +205,6 @@ export class AuthService implements IAuthService {
       const tokens = await this.helperEncryptionService.createJwtTokens({
         userId: user.id,
         role: user.role,
-        teamId: user.teamId ?? null,
-        teamRole: user.teamRole ?? null,
       });
 
       await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
