@@ -6,10 +6,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { BaseEntity } from '@/common/entities/base.entity';
+import { BaseEntity } from './base.entity';
+import { TeamEntity } from './team.entity';
+import { TokenEntity } from './token.entity';
 import { EAuthProvider, ERole, ETeamRole } from '@/common/enums';
-import { TeamEntity } from '@/common/entities/team.entity';
-import { TokenEntity } from './token';
 
 @Entity('users')
 export class UserEntity extends BaseEntity {

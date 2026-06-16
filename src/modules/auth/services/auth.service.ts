@@ -26,10 +26,9 @@ import { IAuthService } from '../interfaces/auth.service.interface';
 import { AuthMailService } from './auth.mail.service';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { ConfigService } from '@nestjs/config';
-import { EAuthProvider } from '@/common/enums';
-import { CacheService } from '@/common/cache/services/cache.service';
+import { EAuthProvider, ETOKEN_TYPE } from '@/common/enums';
 import { generateCode } from '@/common/utils';
-import { redisKey } from '@/common/constants/redis.constant';
+import { TokenService } from '@/modules/token/services/token.service';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -41,7 +40,7 @@ export class AuthService implements IAuthService {
     private readonly helperEncryptionService: HelperEncryptionService,
     private readonly authMailService: AuthMailService,
     private readonly configService: ConfigService,
-    private readonly cacheService: CacheService,
+    private readonly tokenService: TokenService,
   ) {
     this.frontendUrl = this.configService.getOrThrow('app.frontend');
   }
@@ -73,7 +72,6 @@ export class AuthService implements IAuthService {
     });
 
     await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
-
     return ApiResponseDto.success(tokens);
   }
 
@@ -99,7 +97,6 @@ export class AuthService implements IAuthService {
 
   public async logout(payload: IAuthUser): Promise<ApiGenericResponseDto> {
     await this.upsertUserRefreshToken(payload.userId, null);
-
     return ApiGenericResponseDto.success();
   }
 
@@ -112,8 +109,13 @@ export class AuthService implements IAuthService {
       throw new NotFoundException(ERROR_USER.NOT_FOUND);
     }
     const token = generateCode(32);
-    const key = redisKey.forgotPassword(token);
-    await this.cacheService.set(key, user.id, 600);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 phút
+    await this.tokenService.create({
+      userId: user.id,
+      value: token,
+      type: ETOKEN_TYPE.FORGOT_PASSWORD,
+      expiresAt,
+    });
     await this.authMailService.forgotPasswordMail(user, token);
     return ApiGenericResponseDto.success(
       'Send email to reset password successfully',
@@ -124,21 +126,20 @@ export class AuthService implements IAuthService {
     payload: ResetPasswordDto,
   ): Promise<ApiGenericResponseDto> {
     const { token, password } = payload;
-    const key = redisKey.forgotPassword(token);
-    const userId = await this.cacheService.get<number>(key);
 
-    if (!userId) {
-      throw new BadRequestException(ERROR_AUTH.TOKEN_INVALID);
-    }
+    const tokenEntity = await this.tokenService.verify({
+      token,
+      type: ETOKEN_TYPE.FORGOT_PASSWORD,
+    });
 
     const passwordHash =
       await this.helperEncryptionService.createHash(password);
 
-    await this.userRepository.update(userId, {
+    await this.userRepository.update(tokenEntity.userId, {
       password: passwordHash,
     });
 
-    await this.cacheService.del(key);
+    await this.tokenService.revoke(tokenEntity.id);
     return ApiGenericResponseDto.success('Reset password success');
   }
 

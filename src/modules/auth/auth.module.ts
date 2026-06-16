@@ -5,6 +5,7 @@ import { JwtAccessStrategy } from '@/modules/auth/providers/access-jwt.strategy'
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { TeamModule } from '../team/team.module';
+import { TokenModule } from '../token/token.module';
 import { UserModule } from '../users/user.module';
 import { OauthController } from './controller/auth.oauth.controller';
 import { AuthPublicController } from './controller/auth.public.controller';
@@ -18,10 +19,12 @@ import { AuthService } from './services/auth.service';
   imports: [
     HelperModule,
     UserModule,
+    TokenModule,
     TeamModule,
     PassportModule,
     DatabaseModule,
     CacheModule,
+    TokenModule,
   ],
   controllers: [AuthPublicController, OauthController],
   providers: [

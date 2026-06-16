@@ -32,10 +32,6 @@ export class HelperEncryptionService implements IHelperEncryptionService {
   private readonly refreshTokenSecret: string;
   private readonly accessTokenExpire: string;
   private readonly refreshTokenExpire: string;
-  private readonly commonTokenSecret: string;
-
-  private readonly forgotPasswordSecret: string;
-  private readonly forgotPasswordExpire: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -52,16 +48,6 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     );
     this.refreshTokenExpire = this.configService.getOrThrow<string>(
       'auth.refreshToken.tokenExp',
-    );
-
-    this.forgotPasswordSecret = this.configService.getOrThrow<string>(
-      'auth.forgotPassword.secret',
-    );
-    this.forgotPasswordExpire = this.configService.getOrThrow<string>(
-      'auth.forgotPassword.expires',
-    );
-    this.commonTokenSecret = this.configService.getOrThrow<string>(
-      'auth.commonToken.secret',
     );
   }
 
@@ -105,7 +91,7 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     options?: ITempTokenOptions,
   ): Promise<string> {
     return this.jwtService.signAsync(payload, {
-      secret: options?.secret ?? this.commonTokenSecret,
+      secret: options?.secret,
       expiresIn: options?.expiresIn,
     });
   }
@@ -115,7 +101,7 @@ export class HelperEncryptionService implements IHelperEncryptionService {
     options?: IVerifyTokenOptions,
   ): Promise<T> {
     return this.jwtService.verifyAsync<T>(token, {
-      secret: options?.secret ?? this.commonTokenSecret,
+      secret: options?.secret,
     });
   }
 

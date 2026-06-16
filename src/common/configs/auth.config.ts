@@ -23,14 +23,5 @@ export default registerAs(
       secret: process.env.OAUTH_GITHUB_SECRETS,
       redirectUrl: process.env.OAUTH_GITHUB_REDIRECT_URL,
     },
-
-    forgotPassword: {
-      expires: process.env.AUTH_FORGOT_PASSWORD_EXP,
-      secret: process.env.AUTH_FORGOT_PASSWORD_SECRET,
-    },
-
-    commonToken: {
-      secret: process.env.AUTH_COMMON_TOKEN_SECRET,
-    },
   }),
 );

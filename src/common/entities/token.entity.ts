@@ -26,10 +26,10 @@ export class TokenEntity extends BaseEntity {
   @Column()
   expiresAt: Date;
 
-  @Column({ unique: true })
+  @Column()
   userId: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.id, {
+  @ManyToOne(() => UserEntity, (user) => user.tokens, {
     nullable: false,
     onDelete: 'CASCADE',
   })

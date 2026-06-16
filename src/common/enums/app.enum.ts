@@ -12,5 +12,5 @@ export enum APP_BULL_QUEUES {
 export enum ETOKEN_TYPE {
   REFRESH = 'refresh_token',
   VERIFICATION = 'verification',
-  PASSWORD_RESET = 'password_reset',
+  FORGOT_PASSWORD = 'forgot_password',
 }
