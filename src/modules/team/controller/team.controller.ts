@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
@@ -17,6 +18,8 @@ import { CreateTeamDto, JoinRequestDto } from '../dtos/requests';
 import { TeamRequestService } from '../services/team-request.service';
 import { TeamRoles } from '@/common/guard/decorator/guard.role.decorator';
 import { ETeamRole } from '@/common/enums';
+import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
+import { TeamInfoResponseDto } from '../dtos/response';
 
 @ApiTags('Teams')
 @ApiBearerAuth('accessToken')
@@ -27,13 +30,18 @@ export class TeamController {
     private readonly teamRequestService: TeamRequestService,
   ) {}
 
-  @Get()
+  @Get('/info')
+  @ApiEndpoint({
+    summary: '',
+    serialization: TeamInfoResponseDto,
+    httpStatus: HttpStatus.OK,
+    messageKey: '',
+  })
   async getTeam(@AuthUser() user: IAuthUser) {
-    return this.teamService.getTeam(user);
+    return this.teamService.getTeamInfo(user);
   }
 
-  @TeamRoles(ETeamRole.OWNER)
-  @Get('invite')
+  @Get('/invite')
   async getInvite(@AuthUser() user: IAuthUser) {
     return this.teamService.getInviteCode(user);
   }
@@ -82,7 +90,10 @@ export class TeamController {
 
   @TeamRoles(ETeamRole.OWNER)
   @Delete('/members/:id')
-  async removeMember(@Param('id', ParseIntPipe) id: number, @AuthUser() user: IAuthUser) {
+  async removeMember(
+    @Param('id', ParseIntPipe) id: number,
+    @AuthUser() user: IAuthUser,
+  ) {
     return this.teamService.removeMember(id, user);
   }
 

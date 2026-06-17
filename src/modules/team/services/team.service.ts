@@ -10,7 +10,7 @@ import { generateCode } from '@/common/utils';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateTeamDto } from '../dtos/requests';
-import { InviteCodeResponseDto, TeamResponseDto } from '../dtos/response';
+import { InviteCodeResponseDto, TeamInfoResponseDto } from '../dtos/response';
 import { ITeamService } from '../interfaces/team.interface';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamMapper } from '../mappers';
@@ -28,21 +28,25 @@ export class TeamService implements ITeamService {
     private readonly dataSource: DataSource,
   ) {}
 
-  async getTeam(
+  async getTeamInfo(
     authUser: IAuthUser,
-  ): Promise<ApiResponseDto<TeamResponseDto[]>> {
-    const user = await this.userRepo.findOneBy({ id: authUser.userId });
+  ): Promise<ApiResponseDto<TeamInfoResponseDto | null>> {
+    const user = await this.userRepo.findOne({
+      where: {
+        id: authUser.userId,
+      },
+      relations: {
+        team: {
+          users: true,
+        },
+      },
+    });
 
-    if (!user.teamId) {
+    if (!user?.team) {
       return ApiResponseDto.success(null);
     }
 
-    const team = await this.teamRepo.findOne({
-      where: { id: user.teamId },
-      relations: ['users'],
-    });
-
-    return ApiResponseDto.success(team ? TeamMapper.toResponse(team) : []);
+    return ApiResponseDto.success(TeamMapper.toResponse(user.team));
   }
 
   async createTeam(

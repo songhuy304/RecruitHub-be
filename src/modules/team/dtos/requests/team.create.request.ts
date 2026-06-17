@@ -11,7 +11,6 @@ export class CreateTeamDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @MaxLength(50)
   slug: string;
 
   @ApiProperty({ required: false })
