@@ -41,9 +41,13 @@ export class TeamController {
     return this.teamService.getTeamInfo(user);
   }
 
-  @Get('/invite')
-  async getInvite(@AuthUser() user: IAuthUser) {
-    return this.teamService.getInviteCode(user);
+  @TeamRoles(ETeamRole.OWNER)
+  @Get(':teamId/invite')
+  async getInvite(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @AuthUser() user: IAuthUser,
+  ) {
+    return this.teamService.getInviteCode(teamId, user);
   }
 
   @Post()
@@ -57,49 +61,59 @@ export class TeamController {
   }
 
   @TeamRoles(ETeamRole.OWNER)
-  @Get('/join-requests')
+  @Get(':teamId/join-requests')
   async getJoinRequests(
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Query() query: JoinRequestDto,
     @AuthUser() user: IAuthUser,
   ) {
-    return this.teamRequestService.getJoinRequests(query, user);
+    return this.teamRequestService.getJoinRequests(teamId, query, user);
   }
 
   @TeamRoles(ETeamRole.OWNER)
-  @Post('/join-requests/:id/approve')
+  @Post(':teamId/join-requests/:id/approve')
   async approveJoinRequest(
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number,
     @AuthUser() user: IAuthUser,
   ) {
-    return this.teamRequestService.approveJoinRequest(id, user);
+    return this.teamRequestService.approveJoinRequest(teamId, id, user);
   }
 
   @TeamRoles(ETeamRole.OWNER)
-  @Post('/join-requests/:id/reject')
+  @Post(':teamId/join-requests/:id/reject')
   async rejectJoinRequest(
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number,
     @AuthUser() user: IAuthUser,
   ) {
-    return this.teamRequestService.rejectJoinRequest(id, user);
+    return this.teamRequestService.rejectJoinRequest(teamId, id, user);
   }
 
-  @Post('/leave')
-  async leaveTeam(@AuthUser() user: IAuthUser) {
-    return this.teamService.leaveTeam(user);
+  @Post(':teamId/leave')
+  async leaveTeam(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @AuthUser() user: IAuthUser,
+  ) {
+    return this.teamService.leaveTeam(teamId, user);
   }
 
   @TeamRoles(ETeamRole.OWNER)
-  @Delete('/members/:id')
+  @Delete(':teamId/members/:id')
   async removeMember(
+    @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number,
     @AuthUser() user: IAuthUser,
   ) {
-    return this.teamService.removeMember(id, user);
+    return this.teamService.removeMember(teamId, id, user);
   }
 
   @TeamRoles(ETeamRole.OWNER)
-  @Delete()
-  async deleteTeam(@AuthUser() user: IAuthUser) {
-    return this.teamService.deleteTeam(user);
+  @Delete(':teamId')
+  async deleteTeam(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @AuthUser() user: IAuthUser,
+  ) {
+    return this.teamService.deleteTeam(teamId, user);
   }
 }

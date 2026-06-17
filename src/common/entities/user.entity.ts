@@ -2,15 +2,13 @@ import {
   Column,
   Entity,
   Index,
-  JoinColumn,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { BaseEntity } from './base.entity';
-import { TeamEntity } from './team.entity';
 import { TokenEntity } from './token.entity';
-import { EAuthProvider, ERole, ETeamRole } from '@/common/enums';
+import { TeamMemberEntity } from './team-member.entity';
+import { EAuthProvider, ERole } from '@/common/enums';
 
 @Entity('users')
 @Index(['email', 'provider'], { unique: true })
@@ -46,21 +44,11 @@ export class UserEntity extends BaseEntity {
   })
   role: ERole;
 
-  @Column({ type: 'enum', enum: ETeamRole, nullable: true })
-  teamRole: ETeamRole | null;
-
   @Column({ type: 'enum', enum: EAuthProvider, default: EAuthProvider.LOCAL })
   provider: EAuthProvider;
 
-  @Column({ nullable: true })
-  teamId: number;
-
-  @ManyToOne(() => TeamEntity, (team) => team.users, {
-    nullable: true,
-    onDelete: 'SET NULL',
-  })
-  @JoinColumn({ name: 'teamId' })
-  team: TeamEntity;
+  @OneToMany(() => TeamMemberEntity, (teamMember) => teamMember.user)
+  teamMembers: TeamMemberEntity[];
 
   @OneToMany(() => TokenEntity, (token) => token.user)
   tokens: TokenEntity[];

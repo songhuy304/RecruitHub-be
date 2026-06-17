@@ -6,12 +6,15 @@ import { ForbiddenException } from '../filters/exception';
 import { IRequest } from '../request/interfaces';
 import { TEAM_ROLES_DECORATOR_KEY } from './constants/guard.constant';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
+import { DataSource } from 'typeorm';
+import { TeamMemberEntity } from '../entities/team-member.entity';
 
 @Injectable()
 export class TeamRolesGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private readonly userRepo: UserRepositoryImpl,
+    private readonly dataSource: DataSource,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -24,23 +27,31 @@ export class TeamRolesGuard implements CanActivate {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest<IRequest>();
+    const request = context.switchToHttp().getRequest<IRequest>();
+    const { user } = request;
 
     if (!user?.userId) {
       throw new ForbiddenException(ERROR_USER.FORBIDDEN);
     }
 
-    const dbUser = await this.userRepo.findOne({
-      where: { id: user.userId },
-      select: {
-        teamRole: true,
-      },
-    });
-
-    if (!dbUser?.teamRole) {
+    const teamIdStr = request.params.teamId;
+    if (!teamIdStr) {
       throw new ForbiddenException(ERROR_USER.FORBIDDEN);
     }
 
-    return requiredRoles.some((role) => dbUser.teamRole === role);
+    const teamId = parseInt(teamIdStr, 10);
+    if (isNaN(teamId)) {
+      throw new ForbiddenException(ERROR_USER.FORBIDDEN);
+    }
+
+    const member = await this.dataSource.getRepository(TeamMemberEntity).findOne({
+      where: { userId: user.userId, teamId },
+    });
+
+    if (!member) {
+      throw new ForbiddenException(ERROR_USER.FORBIDDEN);
+    }
+
+    return requiredRoles.some((role) => member.role === role);
   }
 }

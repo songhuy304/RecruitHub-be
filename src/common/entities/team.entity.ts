@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseEntity } from '@/common/entities/base.entity';
-import { UserEntity } from '@/common/entities/user.entity';
+import { TeamMemberEntity } from '@/common/entities/team-member.entity';
 
 @Entity('teams')
 export class TeamEntity extends BaseEntity {
@@ -22,6 +22,6 @@ export class TeamEntity extends BaseEntity {
   @Column()
   createdById: number;
 
-  @OneToMany(() => UserEntity, (user) => user.team)
-  users: UserEntity[];
+  @OneToMany(() => TeamMemberEntity, (member) => member.team)
+  members: TeamMemberEntity[];
 }

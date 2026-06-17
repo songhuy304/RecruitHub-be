@@ -11,15 +11,17 @@ export interface ITeamService {
   ): Promise<ApiGenericResponseDto>;
 
   getInviteCode(
+    teamId: number,
     payload: IAuthUser,
   ): Promise<ApiResponseDto<InviteCodeResponseDto | null>>;
 
-  leaveTeam(authUser: IAuthUser): Promise<ApiGenericResponseDto>;
+  leaveTeam(teamId: number, authUser: IAuthUser): Promise<ApiGenericResponseDto>;
 
   removeMember(
+    teamId: number,
     userId: number,
     authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto>;
 
-  deleteTeam(authUser: IAuthUser): Promise<ApiGenericResponseDto>;
+  deleteTeam(teamId: number, authUser: IAuthUser): Promise<ApiGenericResponseDto>;
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository as TypeOrmRepository } from 'typeorm';
-import { UserEntity } from '@/common/entities/user.entity';
+import { UserEntity, TeamMemberEntity } from '@/common/entities';
 import { HelperQueryService } from '@/common/helper/services/helper.query.service';
 import { IUserRepository } from '../interfaces/user.repository.interface';
 import { EAuthProvider } from '@/common/enums';
@@ -42,10 +42,13 @@ export class UserRepositoryImpl extends IUserRepository {
   }
 
   async findById(id: number): Promise<UserEntity | null> {
-    return this.repo.findOneBy({ id });
+    return this.repo.findOne({
+      where: { id },
+      relations: ['teamMembers'],
+    });
   }
 
   async existsTeam(teamId: number): Promise<boolean> {
-    return this.repo.exists({ where: { teamId } });
+    return this.repo.manager.exists(TeamMemberEntity, { where: { teamId } });
   }
 }

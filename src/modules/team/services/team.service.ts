@@ -15,7 +15,7 @@ import { ITeamService } from '../interfaces/team.interface';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamMapper } from '../mappers';
 import { DataSource } from 'typeorm';
-import { TeamRequestEntity, UserEntity } from '@/common/entities';
+import { TeamRequestEntity, UserEntity, TeamMemberEntity } from '@/common/entities';
 import { TeamEntity } from '@/common/entities/team.entity';
 
 @Injectable()
@@ -30,23 +30,15 @@ export class TeamService implements ITeamService {
 
   async getTeamInfo(
     authUser: IAuthUser,
-  ): Promise<ApiResponseDto<TeamInfoResponseDto | null>> {
-    const user = await this.userRepo.findOne({
-      where: {
-        id: authUser.userId,
-      },
-      relations: {
-        team: {
-          users: true,
-        },
-      },
+  ): Promise<ApiResponseDto<TeamResponseDto[]>> {
+    const members = await this.dataSource.getRepository(TeamMemberEntity).find({
+      where: { userId: authUser.userId },
+      relations: ['team', 'team.members', 'team.members.user'],
     });
 
-    if (!user?.team) {
-      return ApiResponseDto.success(null);
-    }
+    const teams = members.map((m) => m.team).filter(Boolean);
 
-    return ApiResponseDto.success(TeamMapper.toResponse(user.team));
+    return ApiResponseDto.success(TeamMapper.toResponseList(teams));
   }
 
   async createTeam(
@@ -54,10 +46,6 @@ export class TeamService implements ITeamService {
     authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
     try {
-      const user = await this.userRepo.findOneBy({ id: authUser.userId });
-      if (user?.teamId) {
-        throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
-      }
       await this.dataSource.transaction(async (manager) => {
         const team = await manager.save(TeamEntity, {
           ...payload,
@@ -65,9 +53,10 @@ export class TeamService implements ITeamService {
           inviteCode: generateCode(6),
         });
 
-        await manager.update(UserEntity, authUser.userId, {
-          team,
-          teamRole: ETeamRole.OWNER,
+        await manager.save(TeamMemberEntity, {
+          userId: authUser.userId,
+          teamId: team.id,
+          role: ETeamRole.OWNER,
         });
       });
 
@@ -79,56 +68,41 @@ export class TeamService implements ITeamService {
   }
 
   async getInviteCode(
+    teamId: number,
     payload: IAuthUser,
   ): Promise<ApiResponseDto<InviteCodeResponseDto | null>> {
-    const user = await this.userRepo.findOne({
-      where: { id: payload.userId },
-      relations: ['team'],
-    });
-
-    if (!user) throw new NotFoundException();
-    if (!user.teamId || !user.team) {
-      return ApiResponseDto.success(null);
-    }
+    const team = await this.teamRepo.findOneBy({ id: teamId });
+    if (!team) throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
 
     return ApiResponseDto.success({
-      inviteCode: user.team.inviteCode ? user.team.inviteCode : null,
+      inviteCode: team.inviteCode ? team.inviteCode : null,
     });
   }
 
-  async leaveTeam(authUser: IAuthUser) {
+  async leaveTeam(teamId: number, authUser: IAuthUser) {
     try {
-      const user = await this.userRepo.findOneBy({ id: authUser.userId });
-      if (!user?.teamId) {
-        throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
-      }
-      const team = await this.teamRepo.findOneBy({ id: user.teamId });
-
+      const team = await this.teamRepo.findOneBy({ id: teamId });
       if (!team) {
         throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
       }
+
+      const member = await this.dataSource.getRepository(TeamMemberEntity).findOneBy({
+        userId: authUser.userId,
+        teamId,
+      });
+
+      if (!member) {
+        throw new NotFoundException(ERROR_TEAM.NOT_IN_TEAM);
+      }
+
       await this.dataSource.transaction(async (manager) => {
         if (authUser.userId === team.createdById) {
-          await manager.update(
-            UserEntity,
-
-            { teamId: user.teamId },
-
-            { teamId: null, teamRole: null },
-          );
-
-          await manager.delete(TeamRequestEntity, {
-            team: { id: user.teamId },
-          });
-          await manager.delete('teams', { id: user.teamId });
-          return;
+          await manager.delete(TeamMemberEntity, { teamId });
+          await manager.delete(TeamRequestEntity, { team: { id: teamId } });
+          await manager.delete(TeamEntity, { id: teamId });
+        } else {
+          await manager.delete(TeamMemberEntity, { id: member.id });
         }
-
-        await manager.update(UserEntity, authUser.userId, {
-          teamId: null,
-
-          teamRole: null,
-        });
       });
 
       return ApiGenericResponseDto.success();
@@ -139,6 +113,7 @@ export class TeamService implements ITeamService {
   }
 
   async removeMember(
+    teamId: number,
     userId: number,
     authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
@@ -146,21 +121,21 @@ export class TeamService implements ITeamService {
       if (userId === authUser.userId) {
         throw new BadRequestException(ERROR_TEAM.REQUEST_EXIST);
       }
-      const owner = await this.userRepo.findOneBy({ id: authUser.userId });
-      if (!owner?.teamId) {
-        throw new BadRequestException(ERROR_TEAM.NOT_IN_TEAM);
+      const team = await this.teamRepo.findOneBy({ id: teamId });
+      if (!team) {
+        throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
       }
-      const user = await this.userRepo.findOneBy({ id: userId });
-      if (!user) {
-        throw new NotFoundException(ERROR_USER.NOT_FOUND);
-      }
-      if (!user.teamId || user.teamId !== owner.teamId) {
-        throw new BadRequestException(ERROR_TEAM.NOT_IN_TEAM);
-      }
-      await this.userRepo.update(userId, {
-        teamId: null,
-        teamRole: null,
+
+      const member = await this.dataSource.getRepository(TeamMemberEntity).findOneBy({
+        userId,
+        teamId,
       });
+
+      if (!member) {
+        throw new BadRequestException(ERROR_TEAM.NOT_IN_TEAM);
+      }
+
+      await this.dataSource.getRepository(TeamMemberEntity).delete(member.id);
 
       return ApiGenericResponseDto.success();
     } catch (error) {
@@ -169,13 +144,9 @@ export class TeamService implements ITeamService {
     }
   }
 
-  async deleteTeam(authUser: IAuthUser) {
+  async deleteTeam(teamId: number, authUser: IAuthUser) {
     try {
-      const user = await this.userRepo.findOneBy({ id: authUser.userId });
-      if (!user?.teamId) {
-        throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
-      }
-      const team = await this.teamRepo.findOneBy({ id: user.teamId });
+      const team = await this.teamRepo.findOneBy({ id: teamId });
       if (!team) {
         throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
       }

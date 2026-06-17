@@ -6,13 +6,14 @@ import { TeamService } from './services/team.service';
 import { HelperModule } from '@/common/helper/helper.module';
 import { UserModule } from '../users/user.module';
 import { TeamController } from './controller/team.controller';
-import { TeamRequestEntity } from '@/common/entities';
+import { TeamRequestEntity, TeamMemberEntity } from '@/common/entities';
 import { TeamRequestRepository } from './repositories/team-request.repository';
 import { TeamRequestService } from './services/team-request.service';
+import { TeamMemberRepository } from './repositories/team-member.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TeamEntity, TeamRequestEntity]),
+    TypeOrmModule.forFeature([TeamEntity, TeamRequestEntity, TeamMemberEntity]),
     HelperModule,
     UserModule,
   ],
@@ -20,9 +21,10 @@ import { TeamRequestService } from './services/team-request.service';
   providers: [
     TeamRepositoryImpl,
     TeamRequestRepository,
+    TeamMemberRepository,
     TeamService,
     TeamRequestService,
   ],
-  exports: [TeamRepositoryImpl, TeamService],
+  exports: [TeamRepositoryImpl, TeamMemberRepository, TeamService],
 })
 export class TeamModule {}

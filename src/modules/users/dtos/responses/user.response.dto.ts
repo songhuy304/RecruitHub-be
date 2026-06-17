@@ -53,8 +53,16 @@ export class UserResponseDto {
   @IsOptional()
   teamId?: number;
 
-  @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER })
+  @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER, required: false })
   @Expose()
   @IsOptional()
   teamRole?: ETeamRole;
+
+  @ApiProperty({
+    example: [{ teamId: 1, role: ETeamRole.OWNER }],
+    required: false,
+  })
+  @Expose()
+  @IsOptional()
+  teams?: { teamId: number; role: ETeamRole }[];
 }
