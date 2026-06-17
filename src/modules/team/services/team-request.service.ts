@@ -1,5 +1,5 @@
 import { ERROR_TEAM, ERROR_USER } from '@/common/constants';
-import { TeamRequestEntity, UserEntity, TeamMemberEntity } from '@/common/entities';
+import { TeamRequestEntity, TeamMemberEntity } from '@/common/entities';
 import { ETeamRequestStatus, ETeamRole } from '@/common/enums';
 import {
   BadRequestException,
@@ -42,8 +42,11 @@ export class TeamRequestService implements ITeamRequestService {
 
     if (!team) throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
 
-    const isAlreadyInTeam = user?.teamMembers?.some((m) => m.teamId === team.id);
-    if (isAlreadyInTeam) throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
+    const isAlreadyInTeam = user?.teamMembers?.some(
+      (m) => m.teamId === team.id,
+    );
+    if (isAlreadyInTeam)
+      throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
 
     const existedRequest = await this.teamRequestRepo.exists({
       team: { id: team.id },
@@ -67,7 +70,6 @@ export class TeamRequestService implements ITeamRequestService {
   async getJoinRequests(
     teamId: number,
     query: JoinRequestDto,
-    authUser: IAuthUser,
   ): Promise<ApiResponseDto<TeamRequestResponseDto[]>> {
     const team = await this.teamRepo.findOneBy({ id: teamId });
 
@@ -81,9 +83,7 @@ export class TeamRequestService implements ITeamRequestService {
           status: query.status,
         },
         relations: {
-          user: {
-            teamMembers: true,
-          },
+          user: true,
         },
       },
     );
@@ -93,7 +93,6 @@ export class TeamRequestService implements ITeamRequestService {
   async approveJoinRequest(
     teamId: number,
     requestId: number,
-    authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
     const request = await this.findRequestById(requestId);
 
@@ -122,7 +121,6 @@ export class TeamRequestService implements ITeamRequestService {
   async rejectJoinRequest(
     teamId: number,
     requestId: number,
-    authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
     const request = await this.findRequestById(requestId);
 

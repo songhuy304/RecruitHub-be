@@ -7,4 +7,5 @@ export interface IAuthUser {
 
 export interface IRequest {
   user: IAuthUser;
+  params: Record<string, string>;
 }

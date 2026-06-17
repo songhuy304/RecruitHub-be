@@ -41,16 +41,12 @@ export class TeamController {
     return this.teamService.getTeamInfo(user);
   }
 
-  @TeamRoles(ETeamRole.OWNER)
   @Get(':teamId/invite')
-  async getInvite(
-    @Param('teamId', ParseIntPipe) teamId: number,
-    @AuthUser() user: IAuthUser,
-  ) {
-    return this.teamService.getInviteCode(teamId, user);
+  async getInvite(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.teamService.getInviteCode(teamId);
   }
 
-  @Post()
+  @Post('/create-team')
   async createTeam(@Body() query: CreateTeamDto, @AuthUser() user: IAuthUser) {
     return this.teamService.createTeam(query, user);
   }
@@ -65,9 +61,8 @@ export class TeamController {
   async getJoinRequests(
     @Param('teamId', ParseIntPipe) teamId: number,
     @Query() query: JoinRequestDto,
-    @AuthUser() user: IAuthUser,
   ) {
-    return this.teamRequestService.getJoinRequests(teamId, query, user);
+    return this.teamRequestService.getJoinRequests(teamId, query);
   }
 
   @TeamRoles(ETeamRole.OWNER)
@@ -75,9 +70,8 @@ export class TeamController {
   async approveJoinRequest(
     @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number,
-    @AuthUser() user: IAuthUser,
   ) {
-    return this.teamRequestService.approveJoinRequest(teamId, id, user);
+    return this.teamRequestService.approveJoinRequest(teamId, id);
   }
 
   @TeamRoles(ETeamRole.OWNER)
@@ -85,9 +79,8 @@ export class TeamController {
   async rejectJoinRequest(
     @Param('teamId', ParseIntPipe) teamId: number,
     @Param('id', ParseIntPipe) id: number,
-    @AuthUser() user: IAuthUser,
   ) {
-    return this.teamRequestService.rejectJoinRequest(teamId, id, user);
+    return this.teamRequestService.rejectJoinRequest(teamId, id);
   }
 
   @Post(':teamId/leave')

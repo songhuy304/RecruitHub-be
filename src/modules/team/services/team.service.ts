@@ -1,4 +1,6 @@
-import { ERROR_TEAM, ERROR_USER } from '@/common/constants';
+import { ERROR_TEAM } from '@/common/constants';
+import { TeamMemberEntity, TeamRequestEntity } from '@/common/entities';
+import { TeamEntity } from '@/common/entities/team.entity';
 import { ETeamRole } from '@/common/enums';
 import {
   BadRequestException,
@@ -7,38 +9,43 @@ import {
 import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
 import { generateCode } from '@/common/utils';
+import { TeamMemberRepository } from '@/modules/team/repositories/team-member.repository';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable, Logger } from '@nestjs/common';
+import { DataSource } from 'typeorm';
 import { CreateTeamDto } from '../dtos/requests';
 import { InviteCodeResponseDto, TeamInfoResponseDto } from '../dtos/response';
 import { ITeamService } from '../interfaces/team.interface';
-import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamMapper } from '../mappers';
-import { DataSource } from 'typeorm';
-import { TeamRequestEntity, UserEntity, TeamMemberEntity } from '@/common/entities';
-import { TeamEntity } from '@/common/entities/team.entity';
+import { TeamRepositoryImpl } from '../repositories/team.repository';
 
 @Injectable()
 export class TeamService implements ITeamService {
   private readonly logger = new Logger(TeamService.name);
 
   constructor(
-    private readonly userRepo: UserRepositoryImpl,
     private readonly teamRepo: TeamRepositoryImpl,
+    private readonly teamMemberRepo: TeamMemberRepository,
     private readonly dataSource: DataSource,
   ) {}
 
   async getTeamInfo(
     authUser: IAuthUser,
-  ): Promise<ApiResponseDto<TeamResponseDto[]>> {
-    const members = await this.dataSource.getRepository(TeamMemberEntity).find({
-      where: { userId: authUser.userId },
-      relations: ['team', 'team.members', 'team.members.user'],
+  ): Promise<ApiResponseDto<TeamInfoResponseDto>> {
+    const member = await this.teamMemberRepo.findOne({
+      where: {
+        userId: authUser.userId,
+      },
+      relations: {
+        team: true,
+      },
     });
 
-    const teams = members.map((m) => m.team).filter(Boolean);
+    if (!member) {
+      throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
+    }
 
-    return ApiResponseDto.success(TeamMapper.toResponseList(teams));
+    return ApiResponseDto.success(TeamMapper.toResponse(member.team));
   }
 
   async createTeam(
@@ -69,7 +76,6 @@ export class TeamService implements ITeamService {
 
   async getInviteCode(
     teamId: number,
-    payload: IAuthUser,
   ): Promise<ApiResponseDto<InviteCodeResponseDto | null>> {
     const team = await this.teamRepo.findOneBy({ id: teamId });
     if (!team) throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
@@ -86,10 +92,12 @@ export class TeamService implements ITeamService {
         throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
       }
 
-      const member = await this.dataSource.getRepository(TeamMemberEntity).findOneBy({
-        userId: authUser.userId,
-        teamId,
-      });
+      const member = await this.dataSource
+        .getRepository(TeamMemberEntity)
+        .findOneBy({
+          userId: authUser.userId,
+          teamId,
+        });
 
       if (!member) {
         throw new NotFoundException(ERROR_TEAM.NOT_IN_TEAM);
@@ -126,10 +134,12 @@ export class TeamService implements ITeamService {
         throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
       }
 
-      const member = await this.dataSource.getRepository(TeamMemberEntity).findOneBy({
-        userId,
-        teamId,
-      });
+      const member = await this.dataSource
+        .getRepository(TeamMemberEntity)
+        .findOneBy({
+          userId,
+          teamId,
+        });
 
       if (!member) {
         throw new BadRequestException(ERROR_TEAM.NOT_IN_TEAM);
