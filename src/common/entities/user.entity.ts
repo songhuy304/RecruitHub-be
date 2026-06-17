@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -12,6 +13,7 @@ import { TokenEntity } from './token.entity';
 import { EAuthProvider, ERole, ETeamRole } from '@/common/enums';
 
 @Entity('users')
+@Index(['email', 'provider'], { unique: true })
 export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
@@ -19,7 +21,7 @@ export class UserEntity extends BaseEntity {
   @Column({ unique: true })
   userName: string;
 
-  @Column({ unique: true })
+  @Column()
   email: string;
 
   @Column({ nullable: true })
