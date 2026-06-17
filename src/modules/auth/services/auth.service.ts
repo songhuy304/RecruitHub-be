@@ -221,8 +221,12 @@ export class AuthService implements IAuthService {
   }
 
   public async validateOAuthLogin(payload: UserOauthDto): Promise<string> {
-    let user = await this.userRepository.findByEmail(payload.email);
-
+    let user = await this.userRepository.findOne({
+      where: {
+        email: payload.email,
+        provider: payload.provider,
+      },
+    });
     if (!user) {
       user = await this.createOAuthUser(payload);
     }
