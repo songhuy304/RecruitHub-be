@@ -42,7 +42,7 @@ export class TeamService implements ITeamService {
     });
 
     if (!member) {
-      throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
+      return ApiResponseDto.success(null);
     }
 
     return ApiResponseDto.success(TeamMapper.toResponse(member.team));
