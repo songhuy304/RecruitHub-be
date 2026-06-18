@@ -26,9 +26,15 @@ import { IAuthService } from '../interfaces/auth.service.interface';
 import { AuthMailService } from './auth.mail.service';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { ConfigService } from '@nestjs/config';
-import { EAuthProvider, ETOKEN_TYPE } from '@/common/enums';
+import {
+  EAuthProvider,
+  ETeamRole,
+  ETeamType,
+  ETOKEN_TYPE,
+} from '@/common/enums';
 import { generateCode } from '@/common/utils';
 import { TokenService } from '@/modules/token/services/token.service';
+import { TeamRepositoryImpl } from '@/modules/team/repositories/team.repository';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -41,6 +47,7 @@ export class AuthService implements IAuthService {
     private readonly authMailService: AuthMailService,
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
+    private readonly teamRepo: TeamRepositoryImpl,
   ) {
     this.frontendUrl = this.configService.getOrThrow('app.frontend');
   }
@@ -69,6 +76,7 @@ export class AuthService implements IAuthService {
     const tokens = await this.helperEncryptionService.createJwtTokens({
       role: user.role,
       userId: user.id,
+      teamId: user.currentTeamId,
     });
 
     await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
@@ -87,9 +95,22 @@ export class AuthService implements IAuthService {
     const hashPassword =
       await this.helperEncryptionService.createHash(password);
 
-    await this.userRepository.create({
+    const newUser = await this.userRepository.create({
       ...payload,
       password: hashPassword,
+    });
+
+    await this.teamRepo.create({
+      name: `Personal Account`,
+      slug: 'personal-account',
+      createdById: newUser.id,
+      type: ETeamType.PERSONAL,
+      members: [
+        {
+          user: newUser,
+          role: ETeamRole.OWNER,
+        },
+      ],
     });
 
     return ApiGenericResponseDto.success('register success');
@@ -165,6 +186,7 @@ export class AuthService implements IAuthService {
     const tokenPayload: IAuthUser = {
       userId: payload.userId,
       role: payload.role,
+      teamId: payload.teamId,
     };
 
     const tokens =
@@ -208,6 +230,7 @@ export class AuthService implements IAuthService {
       const tokens = await this.helperEncryptionService.createJwtTokens({
         userId: user.id,
         role: user.role,
+        teamId: user.currentTeamId,
       });
 
       await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
@@ -243,7 +266,7 @@ export class AuthService implements IAuthService {
 
   private async createOAuthUser(payload: UserOauthDto): Promise<UserEntity> {
     try {
-      return await this.userRepository.create({
+      const user = await this.userRepository.create({
         email: payload.email,
         fullName: payload.fullName,
         avatar: payload.avatar || null,
@@ -251,6 +274,20 @@ export class AuthService implements IAuthService {
         userName: payload.email,
         isVerified: true,
       });
+
+      await this.teamRepo.create({
+        name: 'Personal Account',
+        slug: 'personal-account',
+        createdById: user.id,
+        type: ETeamType.PERSONAL,
+        members: [
+          {
+            user,
+            role: ETeamRole.OWNER,
+          },
+        ],
+      });
+      return user;
     } catch (error) {
       this.logger.error('Error creating OAuth user', error);
 

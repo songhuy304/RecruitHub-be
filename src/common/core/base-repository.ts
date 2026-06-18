@@ -63,7 +63,7 @@ export abstract class BaseRepository<TEntity extends Entity> {
     return this.repo.exists({ where });
   }
 
-  async findAll(
+  async findMany(
     params: IPaginationParams,
     query?: QueryOptions<TEntity>,
   ): Promise<PaginatedDto<TEntity>> {
@@ -74,5 +74,11 @@ export abstract class BaseRepository<TEntity extends Entity> {
         limit: params.limit,
       },
     });
+  }
+
+  async findAll(
+    query?: Omit<QueryOptions<TEntity>, 'pagination'>,
+  ): Promise<TEntity[]> {
+    return this.helperQuery.findAll(this.repo, query);
   }
 }

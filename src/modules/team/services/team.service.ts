@@ -28,6 +28,24 @@ export class TeamService implements ITeamService {
     private readonly dataSource: DataSource,
   ) {}
 
+  async getTeams(
+    authUser: IAuthUser,
+  ): Promise<ApiResponseDto<TeamInfoResponseDto[]>> {
+    const teams = await this.teamRepo.findAll({
+      where: {
+        members: {
+          userId: authUser.userId,
+        },
+      },
+    });
+
+    if (!teams || teams.length === 0) {
+      return ApiResponseDto.success([]);
+    }
+
+    return ApiResponseDto.success(TeamMapper.toResponseList(teams));
+  }
+
   async getTeamInfo(
     authUser: IAuthUser,
   ): Promise<ApiResponseDto<TeamInfoResponseDto>> {
@@ -161,6 +179,8 @@ export class TeamService implements ITeamService {
       throw error;
     }
   }
+
+  public async;
 
   // async inviteMember(dto: InviteMembersDto, authUser: IAuthUser) {}
 }

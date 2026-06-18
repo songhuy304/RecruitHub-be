@@ -1,4 +1,4 @@
-import { ERole, ETeamRole } from '@/common/enums';
+import { ERole, ETeamRole, ETeamType } from '@/common/enums';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import {
@@ -73,6 +73,11 @@ export class TeamInfoResponseDto {
   @Expose()
   @IsString()
   slug: string;
+
+  @ApiProperty({ enum: ETeamType })
+  @Expose()
+  @IsEnum(ETeamType)
+  type: ETeamType;
 }
 
 export class InviteCodeResponseDto {

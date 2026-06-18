@@ -3,3 +3,8 @@ export enum ETeamRequestStatus {
   APPROVED = 'approved',
   REJECTED = 'rejected',
 }
+
+export enum ETeamType {
+  PERSONAL = 'personal',
+  ORGANIZATION = 'organization',
+}
