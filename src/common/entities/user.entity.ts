@@ -34,6 +34,9 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true })
   refreshToken: string;
 
+  @Column()
+  currentTeamId: number | null;
+
   @Column({ nullable: true })
   avatar?: string;
 

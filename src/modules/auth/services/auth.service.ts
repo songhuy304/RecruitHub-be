@@ -84,36 +84,47 @@ export class AuthService implements IAuthService {
   }
 
   public async signup(payload: SignupDto): Promise<ApiGenericResponseDto> {
-    const { email, password } = payload;
+    try {
+      const { email, password } = payload;
 
-    const user = await this.userRepository.findByEmail(email);
+      const user = await this.userRepository.findByEmail(email);
 
-    if (user) {
-      throw new BadRequestException(ERROR_USER.ALREADY_EXISTS);
+      if (user) {
+        throw new BadRequestException(ERROR_USER.ALREADY_EXISTS);
+      }
+
+      const hashPassword =
+        await this.helperEncryptionService.createHash(password);
+
+      const newUser = await this.userRepository.create({
+        ...payload,
+        password: hashPassword,
+      });
+
+      const team = await this.teamRepo.create({
+        name: `Personal Account`,
+        slug: 'personal-account',
+        createdById: newUser.id,
+        type: ETeamType.PERSONAL,
+        members: [
+          {
+            user: newUser,
+            role: ETeamRole.OWNER,
+          },
+        ],
+      });
+
+      await this.userRepository.update(newUser.id, {
+        currentTeamId: team.id,
+      });
+
+      return ApiGenericResponseDto.success('register success');
+    } catch (error) {
+      this.logger.error('Error during signup', error);
+      throw new BadRequestException(
+        `Failed to register user: ${error.message}`,
+      );
     }
-
-    const hashPassword =
-      await this.helperEncryptionService.createHash(password);
-
-    const newUser = await this.userRepository.create({
-      ...payload,
-      password: hashPassword,
-    });
-
-    await this.teamRepo.create({
-      name: `Personal Account`,
-      slug: 'personal-account',
-      createdById: newUser.id,
-      type: ETeamType.PERSONAL,
-      members: [
-        {
-          user: newUser,
-          role: ETeamRole.OWNER,
-        },
-      ],
-    });
-
-    return ApiGenericResponseDto.success('register success');
   }
 
   public async logout(payload: IAuthUser): Promise<ApiGenericResponseDto> {
