@@ -10,7 +10,6 @@ import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
 import { generateCode } from '@/common/utils';
 import { TeamMemberRepository } from '@/modules/team/repositories/team-member.repository';
-import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { CreateTeamDto } from '../dtos/requests';
@@ -35,9 +34,6 @@ export class TeamService implements ITeamService {
     const member = await this.teamMemberRepo.findOne({
       where: {
         userId: authUser.userId,
-      },
-      relations: {
-        team: true,
       },
     });
 
@@ -92,13 +88,10 @@ export class TeamService implements ITeamService {
         throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
       }
 
-      const member = await this.dataSource
-        .getRepository(TeamMemberEntity)
-        .findOneBy({
-          userId: authUser.userId,
-          teamId,
-        });
-
+      const member = await this.teamMemberRepo.findOneBy({
+        userId: authUser.userId,
+        teamId,
+      });
       if (!member) {
         throw new NotFoundException(ERROR_TEAM.NOT_IN_TEAM);
       }
@@ -134,18 +127,16 @@ export class TeamService implements ITeamService {
         throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
       }
 
-      const member = await this.dataSource
-        .getRepository(TeamMemberEntity)
-        .findOneBy({
-          userId,
-          teamId,
-        });
+      const member = await this.teamMemberRepo.findOneBy({
+        userId,
+        teamId,
+      });
 
       if (!member) {
         throw new BadRequestException(ERROR_TEAM.NOT_IN_TEAM);
       }
 
-      await this.dataSource.getRepository(TeamMemberEntity).delete(member.id);
+      await this.teamMemberRepo.remove(member.id);
 
       return ApiGenericResponseDto.success();
     } catch (error) {
