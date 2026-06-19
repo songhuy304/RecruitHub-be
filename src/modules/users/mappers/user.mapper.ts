@@ -8,19 +8,6 @@ export class UserMapper {
       excludeExtraneousValues: true,
     });
 
-    if (user.teamMembers && user.teamMembers.length > 0) {
-      response.teamId = user.teamMembers[0].teamId;
-      response.teamRole = user.teamMembers[0].role;
-      response.teams = user.teamMembers.map((member) => ({
-        teamId: member.teamId,
-        role: member.role,
-      }));
-    } else {
-      response.teamId = null;
-      response.teamRole = null;
-      response.teams = [];
-    }
-
     return response;
   }
 

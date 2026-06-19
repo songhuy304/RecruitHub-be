@@ -4,16 +4,23 @@ import { TeamEntity } from '@/common/entities/team.entity';
 import { ETeamRole } from '@/common/enums';
 import {
   BadRequestException,
+  ForbiddenException,
   NotFoundException,
 } from '@/common/filters/exception';
+import { HelperEncryptionService } from '@/common/helper/services/helper.encryption.service';
 import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
 import { generateCode } from '@/common/utils';
 import { TeamMemberRepository } from '@/modules/team/repositories/team-member.repository';
+import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { CreateTeamDto } from '../dtos/requests';
-import { InviteCodeResponseDto, TeamInfoResponseDto } from '../dtos/response';
+import {
+  InviteCodeResponseDto,
+  TeamInfoResponseDto,
+  TeamSwitchResponseDto,
+} from '../dtos/response';
 import { ITeamService } from '../interfaces/team.interface';
 import { TeamMapper } from '../mappers';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
@@ -24,7 +31,9 @@ export class TeamService implements ITeamService {
 
   constructor(
     private readonly teamRepo: TeamRepositoryImpl,
+    private readonly userRepo: UserRepositoryImpl,
     private readonly teamMemberRepo: TeamMemberRepository,
+    private readonly helperEncryptionService: HelperEncryptionService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -180,7 +189,39 @@ export class TeamService implements ITeamService {
     }
   }
 
-  public async;
+  public async switchTeam(
+    teamId: number,
+    authUser: IAuthUser,
+  ): Promise<ApiResponseDto<TeamSwitchResponseDto>> {
+    if (teamId === authUser.teamId) {
+      return ApiResponseDto.success(null);
+    }
+    const team = await this.teamRepo.findOneBy({ id: teamId });
 
-  // async inviteMember(dto: InviteMembersDto, authUser: IAuthUser) {}
+    if (!team) {
+      throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
+    }
+
+    const teamMember = await this.teamMemberRepo.findOneBy({
+      userId: authUser.userId,
+      teamId: teamId,
+    });
+
+    const token = await this.helperEncryptionService.createJwtTokens({
+      userId: authUser.userId,
+      role: authUser.role,
+      teamId: team.id,
+    });
+
+    if (!teamMember) {
+      throw new ForbiddenException(ERROR_TEAM.NOT_IN_TEAM);
+    }
+
+    await this.userRepo.updateCurrentTeam(authUser.userId, team.id);
+    await this.userRepo.upsertUserRefreshToken(
+      authUser.userId,
+      token.refreshToken,
+    );
+    return ApiResponseDto.success(token);
+  }
 }

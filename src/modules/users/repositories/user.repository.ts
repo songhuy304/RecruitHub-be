@@ -51,4 +51,19 @@ export class UserRepositoryImpl extends IUserRepository {
   async existsTeam(teamId: number): Promise<boolean> {
     return this.repo.manager.exists(TeamMemberEntity, { where: { teamId } });
   }
+
+  public async upsertUserRefreshToken(
+    userId: number,
+    refreshToken: string | null,
+  ) {
+    const hash = refreshToken ? refreshToken : null;
+    await this.repo.update(userId, { refreshToken: hash });
+  }
+
+  public async updateCurrentTeam(
+    userId: number,
+    teamId: number | null,
+  ): Promise<void> {
+    await this.repo.update(userId, { currentTeamId: teamId });
+  }
 }

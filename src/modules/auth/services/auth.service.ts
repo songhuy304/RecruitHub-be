@@ -79,7 +79,10 @@ export class AuthService implements IAuthService {
       teamId: user.currentTeamId,
     });
 
-    await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
+    await this.userRepository.upsertUserRefreshToken(
+      user.id,
+      tokens.refreshToken,
+    );
     return ApiResponseDto.success(tokens);
   }
 
@@ -128,7 +131,7 @@ export class AuthService implements IAuthService {
   }
 
   public async logout(payload: IAuthUser): Promise<ApiGenericResponseDto> {
-    await this.upsertUserRefreshToken(payload.userId, null);
+    await this.userRepository.upsertUserRefreshToken(payload.userId, null);
     return ApiGenericResponseDto.success();
   }
 
@@ -203,7 +206,10 @@ export class AuthService implements IAuthService {
     const tokens =
       await this.helperEncryptionService.createJwtTokens(tokenPayload);
 
-    await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
+    await this.userRepository.upsertUserRefreshToken(
+      user.id,
+      tokens.refreshToken,
+    );
 
     return tokens;
   }
@@ -244,7 +250,10 @@ export class AuthService implements IAuthService {
         teamId: user.currentTeamId,
       });
 
-      await this.upsertUserRefreshToken(user.id, tokens.refreshToken);
+      await this.userRepository.upsertUserRefreshToken(
+        user.id,
+        tokens.refreshToken,
+      );
 
       return ApiResponseDto.success(tokens);
     } catch (error) {
@@ -306,13 +315,5 @@ export class AuthService implements IAuthService {
         `Failed to create OAuth user: ${error.message}`,
       );
     }
-  }
-
-  private async upsertUserRefreshToken(
-    userId: number,
-    refreshToken: string | null,
-  ) {
-    const hash = refreshToken ? refreshToken : null;
-    await this.userRepository.update(userId, { refreshToken: hash });
   }
 }
