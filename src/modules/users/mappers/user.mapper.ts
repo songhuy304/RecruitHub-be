@@ -4,14 +4,28 @@ import { UserResponseDto } from '../dtos/responses/user.response.dto';
 
 export class UserMapper {
   static toResponse(user: UserEntity): UserResponseDto {
-    const response = plainToInstance(UserResponseDto, user, {
-      excludeExtraneousValues: true,
-    });
+    const currentTeamMember = user.teamMembers?.find(
+      (member) => member.teamId === user.currentTeamId,
+    );
 
-    return response;
+    return plainToInstance(
+      UserResponseDto,
+      {
+        ...user,
+        currentTeam: currentTeamMember?.team
+          ? {
+              ...currentTeamMember.team,
+              teamRole: currentTeamMember.role,
+            }
+          : undefined,
+      },
+      {
+        excludeExtraneousValues: true,
+      },
+    );
   }
 
   static toResponses(users: UserEntity[]): UserResponseDto[] {
-    return users.map((user) => this.toResponse(user));
+    return users.map(this.toResponse);
   }
 }

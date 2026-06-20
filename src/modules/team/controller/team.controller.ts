@@ -19,7 +19,8 @@ import { TeamRequestService } from '../services/team-request.service';
 import { TeamRoles } from '@/common/guard/decorator/guard.role.decorator';
 import { ETeamRole } from '@/common/enums';
 import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
-import { TeamInfoResponseDto } from '../dtos/response';
+import { TeamInfoResponseDto, TeamSwitchResponseDto } from '../dtos/response';
+import { ApiResponseDto } from '@/common/response';
 
 @ApiTags('Teams')
 @ApiBearerAuth('accessToken')
@@ -30,10 +31,24 @@ export class TeamController {
     private readonly teamRequestService: TeamRequestService,
   ) {}
 
+  @Get('/')
+  @ApiEndpoint({
+    summary: '',
+    serialization: [TeamInfoResponseDto],
+    httpStatus: HttpStatus.OK,
+    messageKey: '',
+  })
+  async getTeams(
+    @AuthUser() user: IAuthUser,
+  ): Promise<ApiResponseDto<TeamInfoResponseDto[]>> {
+    return this.teamService.getTeams(user);
+  }
+
   @Get('/info')
   @ApiEndpoint({
     summary: '',
     serialization: TeamInfoResponseDto,
+    isArray: true,
     httpStatus: HttpStatus.OK,
     messageKey: '',
   })
@@ -47,6 +62,11 @@ export class TeamController {
   }
 
   @Post('/create-team')
+  @ApiEndpoint({
+    summary: '',
+    httpStatus: HttpStatus.OK,
+    messageKey: 'Successfully created team',
+  })
   async createTeam(@Body() query: CreateTeamDto, @AuthUser() user: IAuthUser) {
     return this.teamService.createTeam(query, user);
   }
@@ -108,5 +128,19 @@ export class TeamController {
     @AuthUser() user: IAuthUser,
   ) {
     return this.teamService.deleteTeam(teamId, user);
+  }
+
+  @Post('switch/:teamId')
+  @ApiEndpoint({
+    summary: '',
+    serialization: TeamSwitchResponseDto,
+    httpStatus: HttpStatus.OK,
+    messageKey: '',
+  })
+  async switchTeam(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @AuthUser() user: IAuthUser,
+  ) {
+    return this.teamService.switchTeam(teamId, user);
   }
 }

@@ -11,7 +11,16 @@ import { ApiResponseDto } from '@/common/response';
 export function DocResponse<T>(
   options: IResponseDocOptions<T>,
 ): MethodDecorator {
-  const { httpStatus, serialization, messageKey } = options;
+  const { httpStatus, serialization, messageKey, isArray } = options;
+
+  const dataSchema = serialization
+    ? isArray
+      ? {
+          type: 'array',
+          items: { $ref: getSchemaPath(serialization) },
+        }
+      : { $ref: getSchemaPath(serialization) }
+    : { type: 'object', example: {} };
 
   const schema: Record<string, unknown> = {
     allOf: [
@@ -23,9 +32,7 @@ export function DocResponse<T>(
             type: 'string',
             example: messageKey,
           },
-          data: serialization
-            ? { $ref: getSchemaPath(serialization) }
-            : { type: 'object', example: {} },
+          data: dataSchema,
         },
       },
     ],

@@ -55,24 +55,7 @@ export class AuthService implements IAuthService {
   public async login(
     data: LoginDto,
   ): Promise<ApiResponseDto<LoginResponseDto>> {
-    const user = await this.userRepository.findByEmailOrUsername(
-      data.identifier,
-      EAuthProvider.LOCAL,
-    );
-
-    if (!user) {
-      throw new UnauthorizedException(ERROR_USER.INVALID_CREDENTIALS);
-    }
-
-    const isMatch = await this.helperEncryptionService.match(
-      user.password,
-      data.password,
-    );
-
-    if (!isMatch) {
-      throw new UnauthorizedException(ERROR_USER.INVALID_CREDENTIALS);
-    }
-
+    const user = await this.validateUser(data.identifier, data.password);
     const tokens = await this.helperEncryptionService.createJwtTokens({
       role: user.role,
       userId: user.id,
@@ -214,22 +197,6 @@ export class AuthService implements IAuthService {
     return tokens;
   }
 
-  public async createOAuthToken(payload: UserOauthDto): Promise<string> {
-    const user = await this.userRepository.findOne({
-      where: { email: payload.email, provider: payload.provider },
-    });
-
-    if (!user) {
-      throw new NotFoundException(ERROR_USER.NOT_FOUND);
-    }
-
-    const token = await this.helperEncryptionService.createToken({
-      userId: user.id,
-    });
-
-    return token;
-  }
-
   public async verifyOAuthToken(
     token: string,
   ): Promise<ApiResponseDto<OauthResponseDto>> {
@@ -264,12 +231,7 @@ export class AuthService implements IAuthService {
   }
 
   public async validateOAuthLogin(payload: UserOauthDto): Promise<string> {
-    let user = await this.userRepository.findOne({
-      where: {
-        email: payload.email,
-        provider: payload.provider,
-      },
-    });
+    let user = await this.validateOAuthUser(payload.email, payload.provider);
     if (!user) {
       user = await this.createOAuthUser(payload);
     }
@@ -295,7 +257,7 @@ export class AuthService implements IAuthService {
         isVerified: true,
       });
 
-      await this.teamRepo.create({
+      const team = await this.teamRepo.create({
         name: 'Personal Account',
         slug: 'personal-account',
         createdById: user.id,
@@ -307,6 +269,8 @@ export class AuthService implements IAuthService {
           },
         ],
       });
+
+      await this.userRepository.updateCurrentTeam(user.id, team.id);
       return user;
     } catch (error) {
       this.logger.error('Error creating OAuth user', error);
@@ -315,5 +279,41 @@ export class AuthService implements IAuthService {
         `Failed to create OAuth user: ${error.message}`,
       );
     }
+  }
+
+  private async validateUser(
+    identifier: string,
+    password: string,
+  ): Promise<UserEntity> {
+    const user = await this.userRepository.findByEmailOrUsername(
+      identifier,
+      EAuthProvider.LOCAL,
+    );
+
+    if (!user) {
+      throw new UnauthorizedException(ERROR_USER.INVALID_CREDENTIALS);
+    }
+
+    const isMatch = await this.helperEncryptionService.match(
+      user.password,
+      password,
+    );
+
+    if (!isMatch) {
+      throw new UnauthorizedException(ERROR_USER.INVALID_CREDENTIALS);
+    }
+
+    return user;
+  }
+
+  private async validateOAuthUser(
+    email: string,
+    provider: EAuthProvider,
+  ): Promise<UserEntity> {
+    const user = await this.userRepository.findByEmail(email, provider);
+    if (!user) {
+      return null;
+    }
+    return user;
   }
 }

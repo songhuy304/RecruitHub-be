@@ -1,6 +1,8 @@
 import { type HttpStatus } from '@nestjs/common';
 import type { ClassConstructor } from 'class-transformer';
 
+export type DocSerialization<T> = ClassConstructor<T> | [ClassConstructor<T>];
+
 export interface IDocBaseOptions {
   summary: string;
   messageKey: string;
@@ -8,7 +10,8 @@ export interface IDocBaseOptions {
 }
 
 export interface IDocTypedOptions<T> extends IDocBaseOptions {
-  serialization: ClassConstructor<T>;
+  serialization: DocSerialization<T>;
+  isArray?: boolean;
 }
 
 export interface IDocPaginatedOptions<T> extends IDocBaseOptions {
@@ -20,6 +23,7 @@ export interface IResponseDocOptions<T> {
   httpStatus: number;
   messageKey: string;
   serialization?: ClassConstructor<T>;
+  isArray?: boolean;
 }
 
 export interface IGenericResponseOptions {

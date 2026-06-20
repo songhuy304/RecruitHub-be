@@ -14,7 +14,9 @@ export class UserService implements IUserService {
   async getProfile(
     payload: IAuthUser,
   ): Promise<ApiResponseDto<UserResponseDto>> {
-    const user = await this.userRepository.findById(payload.userId);
+    const user = await this.userRepository.findByIdWithCurrentTeam(
+      payload.userId,
+    );
 
     if (!user) {
       throw new NotFoundException(ERROR_USER.NOT_FOUND);

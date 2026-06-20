@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEmail,
@@ -9,6 +9,14 @@ import {
   IsString,
 } from 'class-validator';
 import { ERole, ETeamRole } from '@/common/enums';
+import { TeamInfoResponseDto } from '@/modules/team/dtos/response';
+
+export class UserCurrentTeamResponseDto extends TeamInfoResponseDto {
+  @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER })
+  @Expose()
+  @IsEnum(ETeamRole)
+  teamRole: ETeamRole;
+}
 
 export class UserResponseDto {
   @ApiProperty({ example: 1 })
@@ -63,4 +71,10 @@ export class UserResponseDto {
   @IsNumber()
   @IsOptional()
   currentTeamId?: number;
+
+  @ApiProperty({ type: () => UserCurrentTeamResponseDto, required: false })
+  @Expose()
+  @Type(() => UserCurrentTeamResponseDto)
+  @IsOptional()
+  currentTeam?: UserCurrentTeamResponseDto;
 }

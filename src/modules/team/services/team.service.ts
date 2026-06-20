@@ -1,7 +1,7 @@
 import { ERROR_TEAM } from '@/common/constants';
 import { TeamMemberEntity, TeamRequestEntity } from '@/common/entities';
 import { TeamEntity } from '@/common/entities/team.entity';
-import { ETeamRole } from '@/common/enums';
+import { ETeamRole, ETeamType } from '@/common/enums';
 import {
   BadRequestException,
   ForbiddenException,
@@ -81,6 +81,7 @@ export class TeamService implements ITeamService {
           ...payload,
           createdById: authUser.userId,
           inviteCode: generateCode(6),
+          type: ETeamType.ORGANIZATION,
         });
 
         await manager.save(TeamMemberEntity, {
@@ -194,7 +195,7 @@ export class TeamService implements ITeamService {
     authUser: IAuthUser,
   ): Promise<ApiResponseDto<TeamSwitchResponseDto>> {
     if (teamId === authUser.teamId) {
-      return ApiResponseDto.success(null);
+      throw new BadRequestException(ERROR_TEAM.SAME_TEAM);
     }
     const team = await this.teamRepo.findOneBy({ id: teamId });
 

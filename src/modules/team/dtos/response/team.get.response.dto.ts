@@ -54,34 +54,39 @@ export class TeamMemberDto {
 }
 
 export class TeamInfoResponseDto {
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ type: 'number' })
   @Expose()
   @IsNumber()
   id: number;
 
-  @ApiProperty({ example: 'Backend Team' })
+  @ApiProperty({ type: 'string' })
   @Expose()
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 'ABC123' })
+  @ApiProperty({ type: 'string' })
   @Expose()
   @IsString()
   inviteCode: string;
 
-  @ApiProperty({ example: 'my-team' })
+  @ApiProperty({ type: 'string' })
+  @Expose()
+  @IsString()
+  logoUrl?: string;
+
+  @ApiProperty({ type: 'string' })
   @Expose()
   @IsString()
   slug: string;
 
-  @ApiProperty({ enum: ETeamType })
+  @ApiProperty({ enum: ETeamType, example: ETeamType.PERSONAL })
   @Expose()
   @IsEnum(ETeamType)
   type: ETeamType;
 }
 
 export class InviteCodeResponseDto {
-  @ApiProperty({ example: 'ABC123' })
+  @ApiProperty({ type: 'string' })
   @Expose()
   @IsString()
   inviteCode: string;

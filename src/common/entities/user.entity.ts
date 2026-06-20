@@ -43,7 +43,7 @@ export class UserEntity extends BaseEntity {
   @Column({
     type: 'enum',
     enum: ERole,
-    default: ERole.OWNER,
+    default: ERole.ADMIN,
   })
   role: ERole;
 

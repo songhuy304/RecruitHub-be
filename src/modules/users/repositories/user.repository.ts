@@ -44,7 +44,13 @@ export class UserRepositoryImpl extends IUserRepository {
   async findById(id: number): Promise<UserEntity | null> {
     return this.repo.findOne({
       where: { id },
-      relations: ['teamMembers'],
+    });
+  }
+
+  async findByIdWithCurrentTeam(id: number): Promise<UserEntity | null> {
+    return this.repo.findOne({
+      where: { id },
+      relations: ['teamMembers', 'teamMembers.team'],
     });
   }
 
