@@ -8,6 +8,7 @@ import { LoggerModule } from '@/common/logger/logger.module';
 import { HelperModule } from './helper/helper.module';
 import { GuardModule } from './guard/guard.module';
 import { CacheModule } from './cache/cache.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { CacheModule } from './cache/cache.module';
     LoggerModule,
     HelperModule,
     CacheModule,
+    UploadModule,
   ],
   exports: [DatabaseModule, CacheModule],
 })
