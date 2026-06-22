@@ -14,6 +14,7 @@ export const ERROR_AUTH = {
 };
 
 export const ERROR_TEAM = {
+  EXCEED_LIMIT: 'error.team.exceed-limit',
   NOT_FOUND: 'error.team.not-found',
   INVALID_INVITE_CODE: 'error.team.invalid-invite-code',
   REQUEST_EXIST: 'error.team.request-exists',

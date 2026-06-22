@@ -8,10 +8,38 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { ERole, ETeamRole } from '@/common/enums';
-import { TeamInfoResponseDto } from '@/modules/team/dtos/response';
+import { ERole, ETeamRole, ETeamType } from '@/common/enums';
 
-export class UserCurrentTeamResponseDto extends TeamInfoResponseDto {
+export class UserCurrentTeamResponseDto {
+  @ApiProperty({ type: 'number' })
+  @Expose()
+  @IsNumber()
+  id: number;
+
+  @ApiProperty({ type: 'string' })
+  @Expose()
+  @IsString()
+  name: string;
+
+  @ApiProperty({ type: 'string' })
+  @Expose()
+  @IsString()
+  inviteCode: string;
+
+  @ApiProperty({ type: 'string' })
+  @Expose()
+  @IsString()
+  logoUrl?: string;
+
+  @ApiProperty({ type: 'string' })
+  @Expose()
+  @IsString()
+  slug: string;
+
+  @ApiProperty({ enum: ETeamType, example: ETeamType.PERSONAL })
+  @Expose()
+  @IsEnum(ETeamType)
+  type: ETeamType;
   @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER })
   @Expose()
   @IsEnum(ETeamRole)
@@ -54,12 +82,6 @@ export class UserResponseDto {
   @Expose()
   @IsBoolean()
   isVerified: boolean;
-
-  @ApiProperty({ example: 1, required: false })
-  @Expose()
-  @IsNumber()
-  @IsOptional()
-  teamId?: number;
 
   @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER, required: false })
   @Expose()

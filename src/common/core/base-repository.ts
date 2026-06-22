@@ -81,4 +81,10 @@ export abstract class BaseRepository<TEntity extends Entity> {
   ): Promise<TEntity[]> {
     return this.helperQuery.findAll(this.repo, query);
   }
+
+  async count(
+    query?: Pick<QueryOptions<TEntity>, 'filters' | 'where'>,
+  ): Promise<number> {
+    return this.helperQuery.count(this.repo, query);
+  }
 }

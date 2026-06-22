@@ -18,7 +18,7 @@ import { DataSource } from 'typeorm';
 import { CreateTeamDto } from '../dtos/requests';
 import {
   InviteCodeResponseDto,
-  TeamInfoResponseDto,
+  TeamDetailDto,
   TeamSwitchResponseDto,
 } from '../dtos/response';
 import { ITeamService } from '../interfaces/team.interface';
@@ -28,6 +28,7 @@ import { TeamRepositoryImpl } from '../repositories/team.repository';
 @Injectable()
 export class TeamService implements ITeamService {
   private readonly logger = new Logger(TeamService.name);
+  private LIMIT_TEAM = 6;
 
   constructor(
     private readonly teamRepo: TeamRepositoryImpl,
@@ -39,12 +40,15 @@ export class TeamService implements ITeamService {
 
   async getTeams(
     authUser: IAuthUser,
-  ): Promise<ApiResponseDto<TeamInfoResponseDto[]>> {
+  ): Promise<ApiResponseDto<TeamDetailDto[]>> {
     const teams = await this.teamRepo.findAll({
       where: {
         members: {
           userId: authUser.userId,
         },
+      },
+      relations: {
+        members: true,
       },
     });
 
@@ -55,27 +59,21 @@ export class TeamService implements ITeamService {
     return ApiResponseDto.success(TeamMapper.toResponseList(teams));
   }
 
-  async getTeamInfo(
-    authUser: IAuthUser,
-  ): Promise<ApiResponseDto<TeamInfoResponseDto>> {
-    const member = await this.teamMemberRepo.findOne({
-      where: {
-        userId: authUser.userId,
-      },
-    });
-
-    if (!member) {
-      return ApiResponseDto.success(null);
-    }
-
-    return ApiResponseDto.success(TeamMapper.toResponse(member.team));
-  }
-
   async createTeam(
     payload: CreateTeamDto,
     authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
     try {
+      const countTeam = await this.teamMemberRepo.count({
+        where: {
+          userId: authUser.userId,
+        },
+      });
+
+      if (countTeam > this.LIMIT_TEAM) {
+        throw new BadRequestException(ERROR_TEAM.EXCEED_LIMIT);
+      }
+
       await this.dataSource.transaction(async (manager) => {
         const team = await manager.save(TeamEntity, {
           ...payload,

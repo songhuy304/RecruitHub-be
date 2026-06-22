@@ -1,59 +1,21 @@
-import { ERole, ETeamRole, ETeamType } from '@/common/enums';
-import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { ETeamType } from '@/common/enums';
+import { UserResponseDto } from '@/modules/users/dtos/responses/user.response.dto';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { Expose, Type } from 'class-transformer';
 import {
-  IsBoolean,
-  IsEmail,
+  IsArray,
   IsEnum,
   IsNumber,
-  IsOptional,
   IsString,
+  ValidateNested,
 } from 'class-validator';
 
-export class TeamMemberDto {
-  @ApiProperty({ example: 1 })
-  @Expose()
-  @IsNumber()
-  id: number;
+export class TeamMemberDto extends OmitType(UserResponseDto, [
+  'currentTeam',
+  'currentTeamId',
+]) {}
 
-  @ApiProperty({ example: 'john_doe' })
-  @Expose()
-  @IsString()
-  userName: string;
-
-  @ApiProperty({ example: 'john@gmail.com' })
-  @Expose()
-  @IsEmail()
-  email: string;
-
-  @ApiProperty({ example: 'John Doe' })
-  @Expose()
-  @IsString()
-  fullName: string;
-
-  @ApiProperty({ example: 'https://avatar.com/a.png', required: false })
-  @Expose()
-  @IsString()
-  @IsOptional()
-  avatar?: string;
-
-  @ApiProperty({ enum: ERole, example: ERole.MEMBER })
-  @Expose()
-  @IsEnum(ERole)
-  role: ERole;
-
-  @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER })
-  @Expose()
-  @IsEnum(ETeamRole)
-  teamRole: ETeamRole;
-
-  @ApiProperty({ example: true })
-  @Expose()
-  @IsBoolean()
-  isVerified: boolean;
-}
-
-export class TeamInfoResponseDto {
+export class TeamDetailDto {
   @ApiProperty({ type: 'number' })
   @Expose()
   @IsNumber()
@@ -83,6 +45,15 @@ export class TeamInfoResponseDto {
   @Expose()
   @IsEnum(ETeamType)
   type: ETeamType;
+
+  @ApiProperty({
+    type: [TeamMemberDto],
+  })
+  @Expose()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TeamMemberDto)
+  members: TeamMemberDto[];
 }
 
 export class InviteCodeResponseDto {

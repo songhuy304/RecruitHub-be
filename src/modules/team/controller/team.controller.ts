@@ -19,7 +19,7 @@ import { TeamRequestService } from '../services/team-request.service';
 import { TeamRoles } from '@/common/guard/decorator/guard.role.decorator';
 import { ETeamRole } from '@/common/enums';
 import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
-import { TeamInfoResponseDto, TeamSwitchResponseDto } from '../dtos/response';
+import { TeamDetailDto, TeamSwitchResponseDto } from '../dtos/response';
 import { ApiResponseDto } from '@/common/response';
 
 @ApiTags('Teams')
@@ -34,26 +34,14 @@ export class TeamController {
   @Get('/')
   @ApiEndpoint({
     summary: '',
-    serialization: [TeamInfoResponseDto],
+    serialization: [TeamDetailDto],
     httpStatus: HttpStatus.OK,
     messageKey: '',
   })
   async getTeams(
     @AuthUser() user: IAuthUser,
-  ): Promise<ApiResponseDto<TeamInfoResponseDto[]>> {
+  ): Promise<ApiResponseDto<TeamDetailDto[]>> {
     return this.teamService.getTeams(user);
-  }
-
-  @Get('/info')
-  @ApiEndpoint({
-    summary: '',
-    serialization: TeamInfoResponseDto,
-    isArray: true,
-    httpStatus: HttpStatus.OK,
-    messageKey: '',
-  })
-  async getTeam(@AuthUser() user: IAuthUser) {
-    return this.teamService.getTeamInfo(user);
   }
 
   @Get(':teamId/invite')

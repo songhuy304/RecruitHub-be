@@ -1,12 +1,8 @@
 import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
-import { InviteCodeResponseDto, TeamInfoResponseDto } from '../dtos/response';
 import { CreateTeamDto } from '../dtos/requests';
+import { InviteCodeResponseDto } from '../dtos/response';
 export interface ITeamService {
-  getTeamInfo(
-    authUser: IAuthUser,
-  ): Promise<ApiResponseDto<TeamInfoResponseDto>>;
-
   createTeam(
     payload: CreateTeamDto,
     authUser: IAuthUser,
