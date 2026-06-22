@@ -8,5 +8,6 @@ export default registerAs(
     endpoint: process.env.AWS_S3_ENDPOINT,
     accessKeyId: process.env.AWS_S3_ACCESS_KEY,
     secretAccessKey: process.env.AWS_S3_SECRET_KEY,
+    publicUrl: process.env.AWS_S3_PUBLIC_URL,
   }),
 );

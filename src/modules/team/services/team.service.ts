@@ -28,7 +28,7 @@ import { TeamRepositoryImpl } from '../repositories/team.repository';
 @Injectable()
 export class TeamService implements ITeamService {
   private readonly logger = new Logger(TeamService.name);
-  private LIMIT_TEAM = 6;
+  private LIMIT_TEAM = 5;
 
   constructor(
     private readonly teamRepo: TeamRepositoryImpl,

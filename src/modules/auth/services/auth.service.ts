@@ -1,4 +1,4 @@
-import { ERROR_AUTH, ERROR_USER } from '@/common/constants';
+import { AVATAR_FALLBACK, ERROR_AUTH, ERROR_USER } from '@/common/constants';
 import {
   BadRequestException,
   ForbiddenException,
@@ -32,7 +32,7 @@ import {
   ETeamType,
   ETOKEN_TYPE,
 } from '@/common/enums';
-import { generateCode } from '@/common/utils';
+import { generateCode, getRandomItem } from '@/common/utils';
 import { TokenService } from '@/modules/token/services/token.service';
 import { TeamRepositoryImpl } from '@/modules/team/repositories/team.repository';
 
@@ -72,19 +72,18 @@ export class AuthService implements IAuthService {
   public async signup(payload: SignupDto): Promise<ApiGenericResponseDto> {
     try {
       const { email, password } = payload;
-
       const user = await this.userRepository.findByEmail(email);
-
       if (user) {
         throw new BadRequestException(ERROR_USER.ALREADY_EXISTS);
       }
-
       const hashPassword =
         await this.helperEncryptionService.createHash(password);
 
+      const avatar = getRandomItem(AVATAR_FALLBACK);
       const newUser = await this.userRepository.create({
         ...payload,
         password: hashPassword,
+        avatar,
       });
 
       const team = await this.teamRepo.create({

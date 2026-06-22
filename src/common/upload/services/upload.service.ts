@@ -58,13 +58,12 @@ export class UploadService {
 
       await upload.done();
 
-      const endpoint = this.configService.get('s3.endpoint');
-      const url = `${endpoint}/${this.bucketName}/${key}`;
+      const publicUrl = `${this.configService.get('s3.publicUrl')}${this.bucketName}/${key}`;
 
       const response = {
         fileName: file.originalname,
         key,
-        url,
+        url: publicUrl,
         size: file.size,
       };
 

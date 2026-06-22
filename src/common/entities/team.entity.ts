@@ -1,7 +1,15 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { BaseEntity } from '@/common/entities/base.entity';
 import { TeamMemberEntity } from '@/common/entities/team-member.entity';
 import { ETeamType } from '../enums';
+import { getRandomItem } from '../utils';
+import { TEAM_FALLBACK } from '../constants';
 
 @Entity('teams')
 export class TeamEntity extends BaseEntity {
@@ -34,4 +42,11 @@ export class TeamEntity extends BaseEntity {
     cascade: ['insert'],
   })
   members: TeamMemberEntity[];
+
+  @BeforeInsert()
+  setDefaultLogo() {
+    if (!this.logoUrl) {
+      this.logoUrl = getRandomItem(TEAM_FALLBACK);
+    }
+  }
 }
