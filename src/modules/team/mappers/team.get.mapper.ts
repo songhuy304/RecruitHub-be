@@ -5,18 +5,24 @@ import { TeamDetailDto } from '../dtos/response';
 
 export class TeamMapper {
   static toResponse(team: TeamEntity): TeamDetailDto {
-    const response = plainToInstance(TeamDetailDto, team, {
-      excludeExtraneousValues: true,
-    });
+    const { members, ...teamData } = team;
 
-    return response;
+    return plainToInstance(
+      TeamDetailDto,
+      {
+        ...teamData,
+        members: members?.map((member) => ({
+          ...member.user,
+          teamRole: member.role,
+        })),
+      },
+      {
+        excludeExtraneousValues: true,
+      },
+    );
   }
 
   static toResponseList(teams: TeamEntity[]): TeamDetailDto[] {
-    return teams.map((team) =>
-      plainToInstance(TeamDetailDto, team, {
-        excludeExtraneousValues: true,
-      }),
-    );
+    return teams.map((team) => TeamMapper.toResponse(team));
   }
 }

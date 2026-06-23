@@ -48,7 +48,9 @@ export class TeamService implements ITeamService {
         },
       },
       relations: {
-        members: true,
+        members: {
+          user: true,
+        },
       },
     });
 
