@@ -1,14 +1,8 @@
 import { ETeamType } from '@/common/enums';
 import { UserResponseDto } from '@/modules/users/dtos/responses/user.response.dto';
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
-import {
-  IsArray,
-  IsEnum,
-  IsNumber,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import { Expose } from 'class-transformer';
+import { IsEnum, IsNumber, IsString } from 'class-validator';
 
 export class TeamMemberDto extends OmitType(UserResponseDto, [
   'currentTeam',
@@ -46,14 +40,14 @@ export class TeamDetailDto {
   @IsEnum(ETeamType)
   type: ETeamType;
 
-  @ApiProperty({
-    type: [TeamMemberDto],
-  })
-  @Expose()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => TeamMemberDto)
-  members: TeamMemberDto[];
+  // @ApiProperty({
+  //   type: [TeamMemberDto],
+  // })
+  // @Expose()
+  // @IsArray()
+  // @ValidateNested({ each: true })
+  // @Type(() => TeamMemberDto)
+  // members: TeamMemberDto[];
 }
 
 export class InviteCodeResponseDto {

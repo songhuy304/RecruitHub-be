@@ -47,11 +47,6 @@ export class TeamService implements ITeamService {
           userId: authUser.userId,
         },
       },
-      relations: {
-        members: {
-          user: true,
-        },
-      },
     });
 
     if (!teams || teams.length === 0) {
