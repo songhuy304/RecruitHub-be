@@ -75,12 +75,14 @@ export class TeamService implements ITeamService {
       }
 
       await this.dataSource.transaction(async (manager) => {
-        const team = await manager.save(TeamEntity, {
-          ...payload,
-          createdById: authUser.userId,
-          inviteCode: generateCode(6),
-          type: ETeamType.ORGANIZATION,
-        });
+        const team = await manager.save(
+          manager.create(TeamEntity, {
+            ...payload,
+            createdById: authUser.userId,
+            inviteCode: generateCode(6),
+            type: ETeamType.ORGANIZATION,
+          }),
+        );
 
         await manager.save(TeamMemberEntity, {
           userId: authUser.userId,
