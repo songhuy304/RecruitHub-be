@@ -134,9 +134,7 @@ export class AuthService implements IAuthService {
       expiresAt,
     });
     await this.authMailService.forgotPasswordMail(user, token);
-    return ApiGenericResponseDto.success(
-      'Send email to reset password successfully',
-    );
+    return ApiGenericResponseDto.success('');
   }
 
   public async resetPassword(
