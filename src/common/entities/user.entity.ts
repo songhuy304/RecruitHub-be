@@ -16,9 +16,6 @@ export class UserEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  userName: string;
-
   @Column()
   email: string;
 

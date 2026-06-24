@@ -4,6 +4,7 @@ export const ERROR_USER = {
   INVALID_CREDENTIALS: 'error.user.invalid-credentials',
   ALREADY_EXISTS: 'error.user.already-exists',
   ALREADY_IN_TEAM: 'error.user.already-in-team',
+  EMAIL_PROVIDER_CONFLICT: 'error.user.email-provider-conflict',
 };
 
 export const ERROR_AUTH = {

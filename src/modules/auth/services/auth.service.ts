@@ -230,9 +230,12 @@ export class AuthService implements IAuthService {
   }
 
   public async validateOAuthLogin(payload: UserOauthDto): Promise<string> {
-    let user = await this.validateOAuthUser(payload.email, payload.provider);
+    let user = await this.userRepository.findByEmail(payload.email);
+
     if (!user) {
       user = await this.createOAuthUser(payload);
+    } else if (user.provider && user.provider !== payload.provider) {
+      throw new BadRequestException(ERROR_USER.EMAIL_PROVIDER_CONFLICT);
     }
 
     const token = await this.helperEncryptionService.createToken(
@@ -252,7 +255,6 @@ export class AuthService implements IAuthService {
         fullName: payload.fullName,
         avatar: payload.avatar || null,
         provider: payload.provider,
-        userName: payload.email,
         isVerified: true,
       });
 
@@ -284,7 +286,7 @@ export class AuthService implements IAuthService {
     identifier: string,
     password: string,
   ): Promise<UserEntity> {
-    const user = await this.userRepository.findByEmailOrUsername(
+    const user = await this.userRepository.findByEmail(
       identifier,
       EAuthProvider.LOCAL,
     );
@@ -302,17 +304,6 @@ export class AuthService implements IAuthService {
       throw new UnauthorizedException(ERROR_USER.INVALID_CREDENTIALS);
     }
 
-    return user;
-  }
-
-  private async validateOAuthUser(
-    email: string,
-    provider: EAuthProvider,
-  ): Promise<UserEntity> {
-    const user = await this.userRepository.findByEmail(email, provider);
-    if (!user) {
-      return null;
-    }
     return user;
   }
 }

@@ -52,11 +52,6 @@ export class UserResponseDto {
   @IsNumber()
   id: number;
 
-  @ApiProperty({ example: 'john_doe' })
-  @Expose()
-  @IsString()
-  userName: string;
-
   @ApiProperty({ example: 'john@gmail.com' })
   @Expose()
   @IsEmail()

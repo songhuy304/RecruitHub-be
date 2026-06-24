@@ -64,15 +64,12 @@ export abstract class BaseRepository<TEntity extends Entity> {
   }
 
   async findMany(
-    params: IPaginationParams,
-    query?: QueryOptions<TEntity>,
+    pagination: IPaginationParams,
+    query?: Omit<QueryOptions<TEntity>, 'pagination'>,
   ): Promise<PaginatedDto<TEntity>> {
     return this.helperQuery.findMany(this.repo, {
       ...query,
-      pagination: {
-        page: params.page,
-        limit: params.limit,
-      },
+      pagination,
     });
   }
 

@@ -14,6 +14,11 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+type NestedKeyOf<T> = {
+  [K in keyof T & string]: T[K] extends object
+    ? K | `${K}.${NestedKeyOf<T[K]>}`
+    : K;
+}[keyof T & string];
 export interface PaginationOptions {
   page?: number;
   limit?: number;
@@ -51,7 +56,7 @@ const OPS_REQUIRE_VALUE: FilterOperator[] = [
 ];
 
 export interface FilterRule<T extends ObjectLiteral> {
-  field: keyof T & string;
+  field: NestedKeyOf<T>;
   op: FilterOperator;
   value?: unknown;
 }

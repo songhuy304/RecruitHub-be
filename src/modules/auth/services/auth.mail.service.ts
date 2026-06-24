@@ -27,7 +27,7 @@ export class AuthMailService implements IAuthMailService {
         subject: 'Reset password',
         template: 'restore-password',
         context: {
-          username: user.fullName || user.userName || user.email,
+          username: user.fullName || user.email,
           link: resetLink,
         },
       });

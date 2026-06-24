@@ -14,12 +14,20 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { TeamService } from '../services/team.service';
 import { IAuthUser } from '@/common/request/interfaces';
 import { AuthUser } from '@/common/guard/decorator';
-import { CreateTeamDto, JoinRequestDto } from '../dtos/requests';
+import {
+  CreateTeamDto,
+  InviteMembersDto,
+  JoinRequestDto,
+} from '../dtos/requests';
 import { TeamRequestService } from '../services/team-request.service';
 import { TeamRoles } from '@/common/guard/decorator/guard.role.decorator';
 import { ETeamRole } from '@/common/enums';
 import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
-import { TeamDetailDto, TeamSwitchResponseDto } from '../dtos/response';
+import {
+  TeamDetailDto,
+  TeamStatisticsDTO,
+  TeamSwitchResponseDto,
+} from '../dtos/response';
 import { ApiResponseDto } from '@/common/response';
 
 @ApiTags('Teams')
@@ -44,9 +52,9 @@ export class TeamController {
     return this.teamService.getTeams(user);
   }
 
-  @Get(':teamId/invite')
-  async getInvite(@Param('teamId', ParseIntPipe) teamId: number) {
-    return this.teamService.getInviteCode(teamId);
+  @Post('/invitations')
+  async invitations(@Body() payload: InviteMembersDto) {
+    return this.teamService.invitations(payload);
   }
 
   @Post('/create-team')
@@ -130,5 +138,16 @@ export class TeamController {
     @AuthUser() user: IAuthUser,
   ) {
     return this.teamService.switchTeam(teamId, user);
+  }
+
+  @Get(':teamId/statistics')
+  @ApiEndpoint({
+    summary: '',
+    serialization: TeamStatisticsDTO,
+    httpStatus: HttpStatus.OK,
+    messageKey: '',
+  })
+  async getTeamStatistics(@Param('teamId', ParseIntPipe) teamId: number) {
+    return this.teamService.getTeamStatistics(teamId);
   }
 }

@@ -22,7 +22,6 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     _refreshToken: string,
     profile: Profile,
   ) {
-    console.log(profile);
     const { displayName, username, photos } = profile;
 
     const email = username;

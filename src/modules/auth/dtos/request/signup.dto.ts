@@ -10,11 +10,6 @@ import {
 } from 'class-validator';
 
 export class SignupDto implements Partial<UserEntity> {
-  @IsString()
-  @Length(6, 30)
-  @Matches(/^[a-zA-Z0-9_]+$/)
-  userName: string;
-
   @ApiProperty({
     required: true,
   })

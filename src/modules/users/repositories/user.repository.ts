@@ -16,29 +16,16 @@ export class UserRepositoryImpl extends IUserRepository {
     super(repo, helperQuery);
   }
 
-  async findByEmailOrUsername(
-    userName: string,
+  async findByEmail(
+    email: string,
     provider?: EAuthProvider,
   ): Promise<UserEntity | null> {
     return this.repo.findOne({
-      where: [
-        {
-          userName,
-          ...(provider && { provider }),
-        },
-        {
-          email: userName,
-          ...(provider && { provider }),
-        },
-      ],
+      where: {
+        email,
+        ...(provider && { provider }),
+      },
     });
-  }
-
-  async findByEmail(
-    email: string,
-    provider: EAuthProvider = EAuthProvider.LOCAL,
-  ): Promise<UserEntity | null> {
-    return this.repo.findOneBy({ email, provider });
   }
 
   async findById(id: number): Promise<UserEntity | null> {

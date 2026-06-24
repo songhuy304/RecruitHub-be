@@ -49,10 +49,3 @@ export class TeamDetailDto {
   // @Type(() => TeamMemberDto)
   // members: TeamMemberDto[];
 }
-
-export class InviteCodeResponseDto {
-  @ApiProperty({ type: 'string' })
-  @Expose()
-  @IsString()
-  inviteCode: string;
-}
