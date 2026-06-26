@@ -106,9 +106,7 @@ export class AuthService implements IAuthService {
       return ApiGenericResponseDto.success('register success');
     } catch (error) {
       this.logger.error('Error during signup', error);
-      throw new BadRequestException(
-        `Failed to register user: ${error.message}`,
-      );
+      throw new BadRequestException(`${error.message}`);
     }
   }
 

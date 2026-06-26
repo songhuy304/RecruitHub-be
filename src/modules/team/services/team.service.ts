@@ -9,7 +9,11 @@ import {
 } from '@/common/filters/exception';
 import { HelperEncryptionService } from '@/common/helper/services/helper.encryption.service';
 import { IAuthUser } from '@/common/request/interfaces';
-import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
+import {
+  ApiGenericResponseDto,
+  ApiResponseDto,
+  PaginatedResponseDto,
+} from '@/common/response';
 import { generateCode } from '@/common/utils';
 import { TeamMemberRepository } from '@/modules/team/repositories/team-member.repository';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
@@ -18,6 +22,7 @@ import { DataSource } from 'typeorm';
 import { CreateTeamDto, InviteMembersDto } from '../dtos/requests';
 import {
   TeamDetailDto,
+  TeamMemberGetDto,
   TeamStatisticsDTO,
   TeamSwitchResponseDto,
 } from '../dtos/response';
@@ -26,6 +31,7 @@ import { TeamMapper } from '../mappers';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
 import { TeamMemberRequestDto } from '../dtos/requests/team-member.request';
+import { TeamMemberMapper } from '../mappers/team-member.mapper';
 
 @Injectable()
 export class TeamService implements ITeamService {
@@ -246,7 +252,10 @@ export class TeamService implements ITeamService {
     });
   }
 
-  async getTeamMembers(teamId: number, requestDto: TeamMemberRequestDto) {
+  async getTeamMembers(
+    teamId: number,
+    requestDto: TeamMemberRequestDto,
+  ): Promise<PaginatedResponseDto<TeamMemberGetDto>> {
     const { limit, page, search } = requestDto;
     const members = await this.teamMemberRepo.findMany(
       { limit, page },
@@ -258,16 +267,20 @@ export class TeamService implements ITeamService {
           {
             field: 'user.fullName',
             op: 'ilike',
-            value: requestDto.search,
+            value: search,
           },
 
           {
             field: 'user.email',
             op: 'ilike',
-            value: requestDto.search,
+            value: search,
           },
         ],
       },
     );
+
+    const dataMap = TeamMemberMapper.mapFromArray(members.data);
+    this.logger.log(dataMap);
+    return PaginatedResponseDto.success(dataMap, members.meta);
   }
 }

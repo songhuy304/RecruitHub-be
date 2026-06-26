@@ -25,10 +25,12 @@ import { ETeamRole } from '@/common/enums';
 import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
 import {
   TeamDetailDto,
+  TeamMemberGetDto,
   TeamStatisticsDTO,
   TeamSwitchResponseDto,
 } from '../dtos/response';
 import { ApiResponseDto } from '@/common/response';
+import { TeamMemberRequestDto } from '../dtos/requests/team-member.request';
 
 @ApiTags('Teams')
 @ApiBearerAuth('accessToken')
@@ -149,5 +151,20 @@ export class TeamController {
   })
   async getTeamStatistics(@Param('teamId', ParseIntPipe) teamId: number) {
     return this.teamService.getTeamStatistics(teamId);
+  }
+
+  @Get(':teamId/members')
+  @ApiEndpoint({
+    summary: '',
+    serialization: TeamMemberGetDto,
+    httpStatus: HttpStatus.OK,
+    isArray: true,
+    messageKey: '',
+  })
+  async getTeamMembers(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Query() query: TeamMemberRequestDto,
+  ) {
+    return this.teamService.getTeamMembers(teamId, query);
   }
 }
