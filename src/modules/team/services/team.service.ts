@@ -30,7 +30,7 @@ import { ITeamService } from '../interfaces/team.interface';
 import { TeamMapper } from '../mappers';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
-import { TeamMemberRequestDto } from '../dtos/requests/team-member.request';
+import { TeamMembersDto } from '../dtos/requests/team-member.request';
 import { TeamMemberMapper } from '../mappers/team-member.mapper';
 
 @Injectable()
@@ -54,6 +54,11 @@ export class TeamService implements ITeamService {
       where: {
         members: {
           userId: authUser.userId,
+        },
+      },
+      relations: {
+        members: {
+          user: true,
         },
       },
     });
@@ -253,34 +258,28 @@ export class TeamService implements ITeamService {
   }
 
   async getTeamMembers(
-    teamId: number,
-    requestDto: TeamMemberRequestDto,
+    query: TeamMembersDto,
   ): Promise<PaginatedResponseDto<TeamMemberGetDto>> {
-    const { limit, page, search } = requestDto;
+    const { limit, page, search, teamId } = query;
+
     const members = await this.teamMemberRepo.findMany(
       { limit, page },
       {
-        where: { teamId: teamId },
+        where: { teamId },
+        filters: search
+          ? {
+              or: [
+                { field: 'user.fullName', op: 'ilike', value: search },
+                { field: 'user.email', op: 'ilike', value: search },
+              ],
+            }
+          : undefined,
         relations: { user: true },
         sort: { createdAt: SortOrder.DESC },
-        filters: [
-          {
-            field: 'user.fullName',
-            op: 'ilike',
-            value: search,
-          },
-
-          {
-            field: 'user.email',
-            op: 'ilike',
-            value: search,
-          },
-        ],
       },
     );
 
     const dataMap = TeamMemberMapper.mapFromArray(members.data);
-    this.logger.log(dataMap);
     return PaginatedResponseDto.success(dataMap, members.meta);
   }
 }

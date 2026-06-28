@@ -1,8 +1,8 @@
 import { FindOneOptions, FindOptionsWhere } from 'typeorm';
-import { QueryOptions } from '../helper/services/helper.query.service';
 import { IPaginationParams } from '../request/interfaces';
 import { PaginatedDto } from '../response';
 import { Entity } from './entity';
+import { QueryOptions } from '../helper/interfaces/helper-query.interface';
 
 export abstract class Repository<TEntity extends Entity> {
   abstract create(data: Partial<TEntity>): Promise<TEntity>;

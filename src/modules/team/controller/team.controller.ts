@@ -30,7 +30,7 @@ import {
   TeamSwitchResponseDto,
 } from '../dtos/response';
 import { ApiResponseDto } from '@/common/response';
-import { TeamMemberRequestDto } from '../dtos/requests/team-member.request';
+import { TeamMembersDto } from '../dtos/requests/team-member.request';
 
 @ApiTags('Teams')
 @ApiBearerAuth('accessToken')
@@ -153,7 +153,7 @@ export class TeamController {
     return this.teamService.getTeamStatistics(teamId);
   }
 
-  @Get(':teamId/members')
+  @Get('/members')
   @ApiEndpoint({
     summary: '',
     serialization: TeamMemberGetDto,
@@ -161,10 +161,7 @@ export class TeamController {
     isArray: true,
     messageKey: '',
   })
-  async getTeamMembers(
-    @Param('teamId', ParseIntPipe) teamId: number,
-    @Query() query: TeamMemberRequestDto,
-  ) {
-    return this.teamService.getTeamMembers(teamId, query);
+  async getTeamMembers(@Query() query: TeamMembersDto) {
+    return this.teamService.getTeamMembers(query);
   }
 }

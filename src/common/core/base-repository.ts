@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { NotFoundException } from '@nestjs/common';
 
-import { QueryOptions } from '@/common/helper/services/helper.query.service';
+import { QueryOptions } from '@/common/helper/interfaces/helper-query.interface';
 import { HelperQueryService } from '@/common/helper/services/helper.query.service';
 import { IPaginationParams } from '@/common/request/interfaces';
 import { PaginatedDto } from '@/common/response';

@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     ConfigModule,
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
+
       useFactory: () => ({
         type: 'postgres',
         url: process.env.DATABASE_URL,
@@ -16,6 +17,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         ssl: { rejectUnauthorized: false },
         migrations: [__dirname + '/../../migrations/*{.ts,.js}'],
         migrationsRun: false,
+        logging: ['error', 'warn'],
         extra: {
           max: 10,
         },
