@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import {
   IsBoolean,
+  IsDate,
   IsEmail,
   IsEnum,
   IsNumber,
@@ -46,4 +47,24 @@ export class TeamMemberGetDto {
   @Expose()
   @IsOptional()
   teamRole?: ETeamRole;
+
+  @ApiProperty({ example: '2026-06-29T14:00:13.000Z' })
+  @Expose()
+  @IsDate()
+  createdAt: Date;
+
+  @ApiProperty({ example: '2026-06-29T14:00:13.000Z' })
+  @Expose()
+  @IsDate()
+  updatedAt: Date;
+
+  @ApiProperty({ example: '2026-06-29T14:00:13.000Z' })
+  @Expose()
+  @IsDate()
+  created_at: Date;
+
+  @ApiProperty({ example: '2026-06-29T14:00:13.000Z' })
+  @Expose()
+  @IsDate()
+  updated_at: Date;
 }

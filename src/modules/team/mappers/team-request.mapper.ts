@@ -1,20 +1,22 @@
+import { Mapper } from '@/common/core';
 import { TeamRequestEntity } from '@/common/entities';
 import { plainToInstance } from 'class-transformer';
-import { TeamRequestResponseDto } from '../dtos/response';
-import { Mapper } from '@/common/core';
-import { UserMapper } from '@/modules/users/mappers/user.mapper';
+import { TeamJoinRequestDto } from '../dtos/response';
 
 export class TeamRequestMapper extends Mapper<
   TeamRequestEntity,
-  TeamRequestResponseDto
+  TeamJoinRequestDto
 > {
-  static mapFrom(request: TeamRequestEntity): TeamRequestResponseDto {
-    const dto = plainToInstance(TeamRequestResponseDto, request, {
+  static mapFrom(request: TeamRequestEntity): TeamJoinRequestDto {
+    const dto = plainToInstance(TeamJoinRequestDto, request.user || {}, {
       excludeExtraneousValues: true,
     });
-    if (request.user) {
-      dto.user = UserMapper.toResponse(request.user);
-    }
+
+    dto.id = request.id;
+    dto.createdAt = request.createdAt;
+    dto.updatedAt = request.updatedAt;
+
+
     return dto;
   }
 }

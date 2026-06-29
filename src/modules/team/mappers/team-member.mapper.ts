@@ -12,6 +12,10 @@ export class TeamMemberMapper extends Mapper<
       excludeExtraneousValues: true,
     });
     dto.teamRole = member.role;
+    dto.createdAt = member.createdAt;
+    dto.updatedAt = member.updatedAt;
+    dto.created_at = member.createdAt;
+    dto.updated_at = member.updatedAt;
 
     return dto;
   }

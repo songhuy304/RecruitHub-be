@@ -1,18 +1,18 @@
 import { ERROR_TEAM, ERROR_USER } from '@/common/constants';
-import { TeamRequestEntity, TeamMemberEntity } from '@/common/entities';
-import { ETeamRequestStatus, ETeamRole } from '@/common/enums';
+import { TeamMemberEntity, TeamRequestEntity } from '@/common/entities';
+import { ETeamRequestStatus, ETeamRole, SortOrder } from '@/common/enums';
 import {
   BadRequestException,
   NotFoundException,
 } from '@/common/filters/exception';
 import { HelperQueryService } from '@/common/helper/services/helper.query.service';
 import { IAuthUser } from '@/common/request/interfaces';
-import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
+import { ApiGenericResponseDto, PaginatedResponseDto } from '@/common/response';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { JoinRequestDto, JoinTeamByCodeDto } from '../dtos/requests';
-import { TeamRequestResponseDto } from '../dtos/response';
+import { TeamJoinRequestDto } from '../dtos/response';
 import { ITeamRequestService } from '../interfaces/team-request.interface';
 import { TeamRequestMapper } from '../mappers';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
@@ -26,7 +26,7 @@ export class TeamRequestService implements ITeamRequestService {
     private readonly teamRequestRepo: TeamRequestRepository,
     private readonly helperQuery: HelperQueryService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   async joinByCode(
     payload: JoinTeamByCodeDto,
@@ -68,26 +68,28 @@ export class TeamRequestService implements ITeamRequestService {
   }
 
   async getJoinRequests(
-    teamId: number,
     query: JoinRequestDto,
-  ): Promise<ApiResponseDto<TeamRequestResponseDto[]>> {
-    const team = await this.teamRepo.findOneBy({ id: teamId });
+  ): Promise<PaginatedResponseDto<TeamJoinRequestDto>> {
+    const { teamId, name, limit, page } = query;
 
-    if (!team) throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
-
-    const result = await this.helperQuery.findAll(
-      this.teamRequestRepo.repository,
-      {
-        where: {
-          team: { id: team.id },
-          status: query.status,
-        },
-        relations: {
-          user: true,
-        },
+    const result = await this.teamRequestRepo.findMany({ limit, page }, {
+      where: {
+        team: {
+          id: teamId
+        }
       },
-    );
-    return ApiResponseDto.success(TeamRequestMapper.mapFromArray(result));
+      sort: { createdAt: SortOrder.DESC },
+      relations: { user: true },
+      filters: {
+        or: [
+          { field: 'user.fullName', op: 'ilike', value: name },
+          { field: 'user.email', op: 'ilike', value: name },
+        ],
+      }
+    })
+
+    const data = TeamRequestMapper.mapFromArray(result.data);
+    return PaginatedResponseDto.success(data, result.meta);
   }
 
   async approveJoinRequest(

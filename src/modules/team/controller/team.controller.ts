@@ -39,7 +39,7 @@ export class TeamController {
   constructor(
     private readonly teamService: TeamService,
     private readonly teamRequestService: TeamRequestService,
-  ) {}
+  ) { }
 
   @Get('/')
   @ApiEndpoint({
@@ -74,13 +74,11 @@ export class TeamController {
     return this.teamRequestService.joinByCode({ inviteCode: code }, user);
   }
 
-  @TeamRoles(ETeamRole.OWNER)
-  @Get(':teamId/join-requests')
+  @Get('/join-requests')
   async getJoinRequests(
-    @Param('teamId', ParseIntPipe) teamId: number,
     @Query() query: JoinRequestDto,
   ) {
-    return this.teamRequestService.getJoinRequests(teamId, query);
+    return this.teamRequestService.getJoinRequests(query);
   }
 
   @TeamRoles(ETeamRole.OWNER)

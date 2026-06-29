@@ -1,6 +1,8 @@
 import { ETeamRequestStatus } from '@/common/enums';
+import { PaginationRequestDto } from '@/common/request/dtos';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, Length } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsEnum, IsNumber, IsOptional, IsString, Length } from 'class-validator';
 
 export class JoinTeamByCodeDto {
   @ApiProperty()
@@ -9,7 +11,15 @@ export class JoinTeamByCodeDto {
   inviteCode: string;
 }
 
-export class JoinRequestDto {
+export class JoinRequestDto extends PaginationRequestDto {
+  @ApiProperty({
+    required: true,
+    type: 'number',
+  })
+  @IsNumber()
+  @Type(() => Number)
+  teamId: number;
+
   @ApiProperty({ required: false })
   @ApiPropertyOptional()
   @IsOptional()
