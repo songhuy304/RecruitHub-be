@@ -1,16 +1,16 @@
 import { IPaginationParams } from '@/common/request/interfaces';
 import { PaginatedDto } from '@/common/response';
-import { Injectable } from '@nestjs/common';
-import { PinoLogger } from 'nestjs-pino';
+import { Injectable, Logger } from '@nestjs/common';
 import { FindManyOptions, Repository, SelectQueryBuilder } from 'typeorm';
 
 @Injectable()
 export class HelperPaginationService {
+  private readonly logger = new Logger(HelperPaginationService.name);
+
   private readonly DEFAULT_LIMIT = 10;
   private readonly MAX_LIMIT = 100;
 
-  constructor(private readonly logger: PinoLogger) {
-    this.logger.setContext(HelperPaginationService.name);
+  constructor() {
   }
 
   async paginateQueryBuilder<T>(

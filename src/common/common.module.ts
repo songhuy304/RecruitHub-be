@@ -25,11 +25,11 @@ import { UploadModule } from './upload/upload.module';
     GuardModule,
     DatabaseModule,
     RequestModule,
-    LoggerModule,
+    // LoggerModule,
     HelperModule,
     CacheModule,
     UploadModule,
   ],
   exports: [DatabaseModule, CacheModule],
 })
-export class CommonModule {}
+export class CommonModule { }
