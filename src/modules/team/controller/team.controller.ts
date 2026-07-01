@@ -15,9 +15,11 @@ import { TeamService } from '../services/team.service';
 import { IAuthUser } from '@/common/request/interfaces';
 import { AuthUser } from '@/common/guard/decorator';
 import {
+  ApproveJoinRequestDto,
   CreateTeamDto,
   InviteMembersDto,
   JoinRequestDto,
+  RejectJoinRequestDto,
 } from '../dtos/requests';
 import { TeamRequestService } from '../services/team-request.service';
 import { TeamRoles } from '@/common/guard/decorator/guard.role.decorator';
@@ -81,22 +83,14 @@ export class TeamController {
     return this.teamRequestService.getJoinRequests(query);
   }
 
-  @TeamRoles(ETeamRole.OWNER)
-  @Post(':teamId/join-requests/:id/approve')
-  async approveJoinRequest(
-    @Param('teamId', ParseIntPipe) teamId: number,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    return this.teamRequestService.approveJoinRequest(teamId, id);
+  @Post('/join-requests/approve')
+  async approveJoinRequest(@Body() payload: ApproveJoinRequestDto) {
+    return this.teamRequestService.approveJoinRequest(payload);
   }
 
-  @TeamRoles(ETeamRole.OWNER)
-  @Post(':teamId/join-requests/:id/reject')
-  async rejectJoinRequest(
-    @Param('teamId', ParseIntPipe) teamId: number,
-    @Param('id', ParseIntPipe) id: number,
-  ) {
-    return this.teamRequestService.rejectJoinRequest(teamId, id);
+  @Post('/join-requests/reject')
+  async rejectJoinRequest(@Body() payload: RejectJoinRequestDto) {
+    return this.teamRequestService.rejectJoinRequest(payload);
   }
 
   @Post(':teamId/leave')

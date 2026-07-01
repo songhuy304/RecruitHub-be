@@ -5,13 +5,12 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@/common/filters/exception';
-import { HelperQueryService } from '@/common/helper/services/helper.query.service';
 import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, PaginatedResponseDto } from '@/common/response';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { JoinRequestDto, JoinTeamByCodeDto } from '../dtos/requests';
+import { ApproveJoinRequestDto, JoinRequestDto, JoinTeamByCodeDto, RejectJoinRequestDto } from '../dtos/requests';
 import { TeamJoinRequestDto } from '../dtos/response';
 import { ITeamRequestService } from '../interfaces/team-request.interface';
 import { TeamRequestMapper } from '../mappers';
@@ -24,7 +23,6 @@ export class TeamRequestService implements ITeamRequestService {
     private readonly userRepo: UserRepositoryImpl,
     private readonly teamRepo: TeamRepositoryImpl,
     private readonly teamRequestRepo: TeamRequestRepository,
-    private readonly helperQuery: HelperQueryService,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -76,7 +74,8 @@ export class TeamRequestService implements ITeamRequestService {
       where: {
         team: {
           id: teamId
-        }
+        },
+        status: ETeamRequestStatus.PENDING
       },
       sort: { createdAt: SortOrder.DESC },
       relations: { user: true },
@@ -93,9 +92,9 @@ export class TeamRequestService implements ITeamRequestService {
   }
 
   async approveJoinRequest(
-    teamId: number,
-    requestId: number,
+    payload: ApproveJoinRequestDto
   ): Promise<ApiGenericResponseDto> {
+    const { teamId, id: requestId } = payload;
     const request = await this.findRequestById(requestId);
 
     if (request.team.id !== teamId) {
@@ -121,9 +120,9 @@ export class TeamRequestService implements ITeamRequestService {
   }
 
   async rejectJoinRequest(
-    teamId: number,
-    requestId: number,
+    payload: RejectJoinRequestDto
   ): Promise<ApiGenericResponseDto> {
+    const { teamId, id: requestId } = payload;
     const request = await this.findRequestById(requestId);
 
     if (request.team.id !== teamId) {
