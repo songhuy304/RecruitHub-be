@@ -14,4 +14,12 @@ export class TeamMemberRepository extends BaseRepository<TeamMemberEntity> {
   ) {
     super(repo, helperQuery);
   }
+
+  public async getRoleByUser(userId: number, teamId: number) {
+    const teamMember = await this.repo.findOne({
+      where: { userId, teamId },
+      select: ['role'],
+    });
+    return teamMember?.role;
+  }
 }

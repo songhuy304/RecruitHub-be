@@ -1,7 +1,7 @@
 import { ERROR_TEAM } from '@/common/constants';
 import { TeamMemberEntity, TeamRequestEntity } from '@/common/entities';
 import { TeamEntity } from '@/common/entities/team.entity';
-import { ETeamRole, ETeamType, SortOrder } from '@/common/enums';
+import { ETeamRequestStatus, ETeamRole, ETeamType, SortOrder } from '@/common/enums';
 import {
   BadRequestException,
   ForbiddenException,
@@ -45,7 +45,7 @@ export class TeamService implements ITeamService {
     private readonly teamMemberRepo: TeamMemberRepository,
     private readonly helperEncryptionService: HelperEncryptionService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   async getTeams(
     authUser: IAuthUser,
@@ -62,12 +62,13 @@ export class TeamService implements ITeamService {
         },
       },
     });
+    console.log("🚀 ~ TeamService ~ getTeams ~ teams:", teams)
 
     if (!teams || teams.length === 0) {
       return ApiResponseDto.success([]);
     }
 
-    return ApiResponseDto.success(TeamMapper.toResponseList(teams));
+    return ApiResponseDto.success(TeamMapper.toResponseList(teams, authUser.userId));
   }
 
   async createTeam(
@@ -246,7 +247,7 @@ export class TeamService implements ITeamService {
         where: { teamId: team.id },
       }),
       this.teamRequestRepo.count({
-        where: { team: { id: team.id } },
+        where: { team: { id: team.id }, status: ETeamRequestStatus.PENDING },
       }),
     ]);
 
@@ -268,14 +269,14 @@ export class TeamService implements ITeamService {
         where: { teamId },
         filters: search
           ? {
-              or: [
-                { field: 'user.fullName', op: 'ilike', value: search },
-                { field: 'user.email', op: 'ilike', value: search },
-              ],
-            }
+            or: [
+              { field: 'user.fullName', op: 'ilike', value: search },
+              { field: 'user.email', op: 'ilike', value: search },
+            ],
+          }
           : undefined,
         relations: { user: true },
-        sort: { createdAt: SortOrder.DESC },
+        sort: { createdAt: SortOrder.ASC },
       },
     );
 
