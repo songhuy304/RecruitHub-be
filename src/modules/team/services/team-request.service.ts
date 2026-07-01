@@ -16,12 +16,14 @@ import { ITeamRequestService } from '../interfaces/team-request.interface';
 import { TeamRequestMapper } from '../mappers';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
+import { TeamMemberRepository } from '../repositories/team-member.repository';
 
 @Injectable()
 export class TeamRequestService implements ITeamRequestService {
   constructor(
     private readonly userRepo: UserRepositoryImpl,
     private readonly teamRepo: TeamRepositoryImpl,
+    private readonly teamMemberRepo: TeamMemberRepository,
     private readonly teamRequestRepo: TeamRequestRepository,
     private readonly dataSource: DataSource,
   ) { }
@@ -30,25 +32,21 @@ export class TeamRequestService implements ITeamRequestService {
     payload: JoinTeamByCodeDto,
     authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
-    const [team, user] = await Promise.all([
-      this.teamRepo.findOneBy({ inviteCode: payload.inviteCode }),
-      this.userRepo.findOne({
-        where: { id: authUser.userId },
-        relations: ['teamMembers'],
-      }),
-    ]);
+    const team = await this.teamRepo.findOneBy({ inviteCode: payload.inviteCode });
 
     if (!team) throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
 
-    const isAlreadyInTeam = user?.teamMembers?.some(
-      (m) => m.teamId === team.id,
-    );
-    if (isAlreadyInTeam)
+    const isExist = await this.teamMemberRepo.exists({
+      teamId: team.id,
+      userId: authUser.userId,
+    })
+
+    if (isExist)
       throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
 
     const existedRequest = await this.teamRequestRepo.exists({
       team: { id: team.id },
-      user: { id: user.id },
+      user: { id: authUser.userId },
       status: ETeamRequestStatus.PENDING,
     });
 
@@ -59,7 +57,7 @@ export class TeamRequestService implements ITeamRequestService {
     await this.teamRequestRepo.create({
       status: ETeamRequestStatus.PENDING,
       team,
-      user,
+      user: { id: authUser.userId },
     });
 
     return ApiGenericResponseDto.success();
@@ -75,14 +73,22 @@ export class TeamRequestService implements ITeamRequestService {
         team: {
           id: teamId
         },
-        status: ETeamRequestStatus.PENDING
       },
       sort: { createdAt: SortOrder.DESC },
       relations: { user: true },
       filters: {
-        or: [
-          { field: 'user.fullName', op: 'ilike', value: name },
-          { field: 'user.email', op: 'ilike', value: name },
+        and: [
+          {
+            field: 'status',
+            op: 'eq',
+            value: ETeamRequestStatus.PENDING,
+          },
+          {
+            or: [
+              { field: 'user.fullName', op: 'ilike', value: name },
+              { field: 'user.email', op: 'ilike', value: name },
+            ],
+          },
         ],
       }
     })
