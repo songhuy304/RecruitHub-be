@@ -1,4 +1,4 @@
-import { ETeamType } from '@/common/enums';
+import { ETeamRole, ETeamType } from '@/common/enums';
 import { UserResponseDto } from '@/modules/users/dtos/responses/user.response.dto';
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
@@ -7,7 +7,7 @@ import { IsEnum, IsNumber, IsString } from 'class-validator';
 export class TeamMemberDto extends OmitType(UserResponseDto, [
   'currentTeam',
   'currentTeamId',
-]) {}
+]) { }
 
 export class TeamDetailDto {
   @ApiProperty({ type: 'number' })
@@ -39,6 +39,11 @@ export class TeamDetailDto {
   @Expose()
   @IsEnum(ETeamType)
   type: ETeamType;
+
+  @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER })
+  @Expose()
+  @IsEnum(ETeamRole)
+  teamRole: ETeamRole;
 
   // @ApiProperty({
   //   type: [TeamMemberDto],

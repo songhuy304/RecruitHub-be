@@ -2,19 +2,17 @@ import { plainToInstance } from 'class-transformer';
 
 import { TeamEntity } from '@/common/entities/team.entity';
 import { TeamDetailDto } from '../dtos/response';
+import { getTeamRoleByUser } from '../utils';
 
 export class TeamMapper {
-  static toResponse(team: TeamEntity): TeamDetailDto {
-    const { members, ...teamData } = team;
+  static toResponse(team: TeamEntity, userId: number): TeamDetailDto {
+    const teamRole = getTeamRoleByUser(team, userId);
 
     return plainToInstance(
       TeamDetailDto,
       {
-        ...teamData,
-        members: members?.map((member) => ({
-          ...member.user,
-          teamRole: member.role,
-        })),
+        ...team,
+        teamRole: teamRole,
       },
       {
         excludeExtraneousValues: true,
@@ -22,7 +20,7 @@ export class TeamMapper {
     );
   }
 
-  static toResponseList(teams: TeamEntity[]): TeamDetailDto[] {
-    return teams.map((team) => TeamMapper.toResponse(team));
+  static toResponseList(teams: TeamEntity[], userId: number): TeamDetailDto[] {
+    return teams.map((team) => TeamMapper.toResponse(team, userId));
   }
 }
