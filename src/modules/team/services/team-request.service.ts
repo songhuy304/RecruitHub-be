@@ -7,24 +7,24 @@ import {
 } from '@/common/filters/exception';
 import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, PaginatedResponseDto } from '@/common/response';
-import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { ApproveJoinRequestDto, JoinRequestDto, JoinTeamByCodeDto, RejectJoinRequestDto } from '../dtos/requests';
 import { TeamJoinRequestDto } from '../dtos/response';
 import { ITeamRequestService } from '../interfaces/team-request.interface';
 import { TeamRequestMapper } from '../mappers';
+import { TeamMemberRepository } from '../repositories/team-member.repository';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
-import { TeamMemberRepository } from '../repositories/team-member.repository';
+import { TeamPermissionService } from './team-permission.service';
 
 @Injectable()
 export class TeamRequestService implements ITeamRequestService {
   constructor(
-    private readonly userRepo: UserRepositoryImpl,
     private readonly teamRepo: TeamRepositoryImpl,
     private readonly teamMemberRepo: TeamMemberRepository,
     private readonly teamRequestRepo: TeamRequestRepository,
+    private readonly teamPermissionService: TeamPermissionService,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -98,8 +98,12 @@ export class TeamRequestService implements ITeamRequestService {
   }
 
   async approveJoinRequest(
-    payload: ApproveJoinRequestDto
+    payload: ApproveJoinRequestDto,
+    authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
+    await this.teamPermissionService.requireOwner(payload.teamId, authUser.userId);
+
+
     const { teamId, id: requestId } = payload;
     const request = await this.findRequestById(requestId);
 
@@ -126,8 +130,11 @@ export class TeamRequestService implements ITeamRequestService {
   }
 
   async rejectJoinRequest(
-    payload: RejectJoinRequestDto
+    payload: RejectJoinRequestDto,
+    authUser: IAuthUser
   ): Promise<ApiGenericResponseDto> {
+    await this.teamPermissionService.requireOwner(payload.teamId, authUser.userId);
+
     const { teamId, id: requestId } = payload;
     const request = await this.findRequestById(requestId);
 

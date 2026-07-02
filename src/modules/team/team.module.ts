@@ -10,6 +10,7 @@ import { TeamRequestEntity, TeamMemberEntity } from '@/common/entities';
 import { TeamRequestRepository } from './repositories/team-request.repository';
 import { TeamRequestService } from './services/team-request.service';
 import { TeamMemberRepository } from './repositories/team-member.repository';
+import { TeamPermissionService } from './services/team-permission.service';
 
 @Module({
   imports: [
@@ -24,7 +25,8 @@ import { TeamMemberRepository } from './repositories/team-member.repository';
     TeamMemberRepository,
     TeamService,
     TeamRequestService,
+    TeamPermissionService
   ],
-  exports: [TeamRepositoryImpl, TeamMemberRepository, TeamService],
+  exports: [TeamRepositoryImpl, TeamMemberRepository, TeamService, TeamPermissionService],
 })
-export class TeamModule {}
+export class TeamModule { }

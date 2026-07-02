@@ -24,4 +24,5 @@ export const ERROR_TEAM = {
   REQUEST_ALREADY_PROCESSED: 'error.team.request-already-processed',
   NOT_IN_TEAM: 'error.team.not-in-team',
   SAME_TEAM: 'error.team.same-team',
+  OWNER_REQUIRED: 'error.team.owner-required',
 };

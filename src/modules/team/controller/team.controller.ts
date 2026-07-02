@@ -11,9 +11,10 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-import { TeamService } from '../services/team.service';
-import { IAuthUser } from '@/common/request/interfaces';
+import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
 import { AuthUser } from '@/common/guard/decorator';
+import { IAuthUser } from '@/common/request/interfaces';
+import { ApiResponseDto } from '@/common/response';
 import {
   ApproveJoinRequestDto,
   CreateTeamDto,
@@ -21,18 +22,16 @@ import {
   JoinRequestDto,
   RejectJoinRequestDto,
 } from '../dtos/requests';
-import { TeamRequestService } from '../services/team-request.service';
-import { TeamRoles } from '@/common/guard/decorator/guard.role.decorator';
-import { ETeamRole } from '@/common/enums';
-import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
+import { TeamMembersDto } from '../dtos/requests/team-member.request';
 import {
   TeamDetailDto,
+  TeamJoinRequestDto,
   TeamMemberGetDto,
   TeamStatisticsDTO,
   TeamSwitchResponseDto,
 } from '../dtos/response';
-import { ApiResponseDto } from '@/common/response';
-import { TeamMembersDto } from '../dtos/requests/team-member.request';
+import { TeamRequestService } from '../services/team-request.service';
+import { TeamService } from '../services/team.service';
 
 @ApiTags('Teams')
 @ApiBearerAuth('accessToken')
@@ -77,31 +76,35 @@ export class TeamController {
   }
 
   @Get('/join-requests')
-  async getJoinRequests(
-    @Query() query: JoinRequestDto,
-  ) {
+  @ApiEndpoint({
+    summary: '',
+    serialization: [TeamJoinRequestDto],
+    isArray: true,
+    httpStatus: HttpStatus.OK,
+    messageKey: '',
+  })
+  async getJoinRequests(@Query() query: JoinRequestDto) {
     return this.teamRequestService.getJoinRequests(query);
   }
 
   @Post('/join-requests/approve')
-  async approveJoinRequest(@Body() payload: ApproveJoinRequestDto) {
-    return this.teamRequestService.approveJoinRequest(payload);
+  async approveJoinRequest(@Body() payload: ApproveJoinRequestDto, @AuthUser() user: IAuthUser) {
+    return this.teamRequestService.approveJoinRequest(payload, user);
   }
 
   @Post('/join-requests/reject')
-  async rejectJoinRequest(@Body() payload: RejectJoinRequestDto) {
-    return this.teamRequestService.rejectJoinRequest(payload);
+  async rejectJoinRequest(@Body() payload: RejectJoinRequestDto, @AuthUser() user: IAuthUser) {
+    return this.teamRequestService.rejectJoinRequest(payload, user);
   }
 
-  @Post(':teamId/leave')
+  @Post('/leave')
   async leaveTeam(
-    @Param('teamId', ParseIntPipe) teamId: number,
+    @Body() payload: { teamId: number },
     @AuthUser() user: IAuthUser,
   ) {
-    return this.teamService.leaveTeam(teamId, user);
+    return this.teamService.leaveTeam(payload.teamId, user);
   }
 
-  @TeamRoles(ETeamRole.OWNER)
   @Delete(':teamId/members/:id')
   async removeMember(
     @Param('teamId', ParseIntPipe) teamId: number,
@@ -111,7 +114,6 @@ export class TeamController {
     return this.teamService.removeMember(teamId, id, user);
   }
 
-  @TeamRoles(ETeamRole.OWNER)
   @Delete(':teamId')
   async deleteTeam(
     @Param('teamId', ParseIntPipe) teamId: number,
