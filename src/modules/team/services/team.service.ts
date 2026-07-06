@@ -19,7 +19,7 @@ import { TeamMemberRepository } from '@/modules/team/repositories/team-member.re
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { CreateTeamDto, InviteMembersDto } from '../dtos/requests';
+import { CreateTeamDto, InviteMembersDto, UpdateTeamDto, UpdateTeamMemberDto } from '../dtos/requests';
 import {
   TeamDetailDto,
   TeamMemberGetDto,
@@ -32,6 +32,7 @@ import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
 import { TeamMembersDto } from '../dtos/requests/team-member.request';
 import { TeamMemberMapper } from '../mappers/team-member.mapper';
+import { TeamPermissionService } from './team-permission.service';
 
 @Injectable()
 export class TeamService implements ITeamService {
@@ -44,6 +45,7 @@ export class TeamService implements ITeamService {
     private readonly teamRequestRepo: TeamRequestRepository,
     private readonly teamMemberRepo: TeamMemberRepository,
     private readonly helperEncryptionService: HelperEncryptionService,
+    private readonly teamPermissionService: TeamPermissionService,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -62,7 +64,6 @@ export class TeamService implements ITeamService {
         },
       },
     });
-    console.log("🚀 ~ TeamService ~ getTeams ~ teams:", teams)
 
     if (!teams || teams.length === 0) {
       return ApiResponseDto.success([]);
@@ -110,6 +111,37 @@ export class TeamService implements ITeamService {
     }
   }
 
+  async updateTeam(payload: UpdateTeamDto, teamId: number, authUser: IAuthUser): Promise<ApiGenericResponseDto> {
+    await this.teamPermissionService.requireOwner(teamId, authUser.userId);
+
+    const team = await this.teamRepo.findOneBy({ id: teamId });
+    if (!team) {
+      throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
+    }
+
+    await this.teamRepo.update(team.id, {
+      ...payload,
+    });
+
+    return ApiGenericResponseDto.success();
+
+  }
+
+  async updateMemberRole(teamId: number, userId: number, payload: UpdateTeamMemberDto, authUser: IAuthUser): Promise<ApiGenericResponseDto> {
+    await this.teamPermissionService.requireOwner(teamId, authUser.userId);
+
+    const user = await this.teamMemberRepo.findOneBy({ teamId, userId });
+    if (!user) {
+      throw new NotFoundException(ERROR_TEAM.NOT_IN_TEAM);
+    }
+
+    await this.teamMemberRepo.update(user.id, {
+      role: payload.role,
+    });
+
+
+    return ApiGenericResponseDto.success();
+  }
   async invitations(payload: InviteMembersDto): Promise<ApiResponseDto<void>> {
     const mails = [...new Set(payload.emails)];
 

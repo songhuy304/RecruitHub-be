@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -21,6 +22,8 @@ import {
   InviteMembersDto,
   JoinRequestDto,
   RejectJoinRequestDto,
+  UpdateTeamDto,
+  UpdateTeamMemberDto,
 } from '../dtos/requests';
 import { TeamMembersDto } from '../dtos/requests/team-member.request';
 import {
@@ -68,6 +71,17 @@ export class TeamController {
   })
   async createTeam(@Body() query: CreateTeamDto, @AuthUser() user: IAuthUser) {
     return this.teamService.createTeam(query, user);
+  }
+
+
+  @Patch(':teamId')
+  @ApiEndpoint({
+    summary: '',
+    httpStatus: HttpStatus.OK,
+    messageKey: 'Successfully updated team',
+  })
+  async updateTeam(@Body() query: UpdateTeamDto, @Param('teamId', ParseIntPipe) teamId: number, @AuthUser() user: IAuthUser) {
+    return this.teamService.updateTeam(query, teamId, user);
   }
 
   @Post('/join/:code')
@@ -157,5 +171,15 @@ export class TeamController {
   })
   async getTeamMembers(@Query() query: TeamMembersDto) {
     return this.teamService.getTeamMembers(query);
+  }
+
+  @Patch(':teamId/members/:userId')
+  async updateMember(
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @Param('userId', ParseIntPipe) userId: number,
+    @Body() payload: UpdateTeamMemberDto,
+    @AuthUser() user: IAuthUser,
+  ) {
+    return this.teamService.updateMemberRole(teamId, userId, payload, user);
   }
 }
