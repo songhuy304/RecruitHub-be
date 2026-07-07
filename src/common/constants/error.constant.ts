@@ -5,6 +5,7 @@ export const ERROR_USER = {
   ALREADY_EXISTS: 'error.user.already-exists',
   ALREADY_IN_TEAM: 'error.user.already-in-team',
   EMAIL_PROVIDER_CONFLICT: 'error.user.email-provider-conflict',
+  PASSWORD_SAME: 'error.user.password-same',
 };
 
 export const ERROR_AUTH = {
