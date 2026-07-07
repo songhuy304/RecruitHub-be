@@ -1,24 +1,24 @@
-import { PublicRoute, RefreshToken } from '@/common/guard/decorator';
+import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
+import { AuthUser, PublicRoute } from '@/common/guard/decorator';
+import { JwtRefreshGuard } from '@/common/guard/jwt.refresh.guard';
 import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
-import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
   ForgotPasswordDto,
   LoginDto,
+  RefreshDto,
   ResetPasswordDto,
   SignupDto,
 } from '../dtos/request';
 import { AuthRefreshResponseDto, LoginResponseDto } from '../dtos/response';
 import { AuthService } from '../services/auth.service';
-import { AuthUser } from '@/common/guard/decorator';
-import { JwtRefreshGuard } from '@/common/guard/jwt.refresh.guard';
-import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthPublicController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @PublicRoute()
   @Post('/login')
@@ -49,16 +49,15 @@ export class AuthPublicController {
     return this.authService.logout(payload);
   }
 
-  @ApiBearerAuth('refreshToken')
   @ApiOperation({ summary: 'Refresh token' })
-  @Get('refresh-token')
+  @Post('refresh-token')
   @PublicRoute()
   @UseGuards(JwtRefreshGuard)
   public refreshTokens(
     @AuthUser() user: IAuthUser,
-    @RefreshToken() refreshToken: string,
+    @Body() payload: RefreshDto,
   ): Promise<AuthRefreshResponseDto> {
-    return this.authService.refreshTokens(user, refreshToken);
+    return this.authService.refreshTokens(user, payload);
   }
 
   @PublicRoute()

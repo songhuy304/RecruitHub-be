@@ -3,6 +3,7 @@ import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
 import {
   ForgotPasswordDto,
   LoginDto,
+  RefreshDto,
   SignupDto,
   UserOauthDto,
 } from '../dtos/request';
@@ -13,9 +14,10 @@ export interface IAuthService {
   signup(payload: SignupDto): Promise<ApiGenericResponseDto>;
   forgotPassword(payload: ForgotPasswordDto): Promise<ApiGenericResponseDto>;
   refreshTokens(
-    payload: IAuthUser,
-    refreshToken: string,
+    authUser: IAuthUser,
+    payload: RefreshDto,
   ): Promise<AuthRefreshResponseDto>;
+
   logout(payload: IAuthUser): Promise<ApiGenericResponseDto>;
   validateOAuthLogin(payload: UserOauthDto): Promise<string>;
 }

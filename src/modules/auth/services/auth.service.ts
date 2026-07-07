@@ -13,6 +13,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   ForgotPasswordDto,
   LoginDto,
+  RefreshDto,
   ResetPasswordDto,
   SignupDto,
   UserOauthDto,
@@ -157,10 +158,10 @@ export class AuthService implements IAuthService {
   }
 
   public async refreshTokens(
-    payload: IAuthUser,
-    refreshToken: string,
+    authUser: IAuthUser,
+    payload: RefreshDto,
   ): Promise<AuthRefreshResponseDto> {
-    const user = await this.userRepository.findById(payload.userId);
+    const user = await this.userRepository.findById(authUser.userId);
 
     if (!user || !user.refreshToken) {
       throw new ForbiddenException(ERROR_USER.FORBIDDEN);
@@ -168,7 +169,7 @@ export class AuthService implements IAuthService {
 
     const isMatch = await this.helperEncryptionService.match(
       user.refreshToken,
-      refreshToken,
+      payload.refreshToken,
     );
 
     if (!isMatch) {
@@ -176,9 +177,9 @@ export class AuthService implements IAuthService {
     }
 
     const tokenPayload: IAuthUser = {
-      userId: payload.userId,
-      role: payload.role,
-      teamId: payload.teamId,
+      userId: authUser.userId,
+      role: authUser.role,
+      teamId: authUser.teamId,
     };
 
     const tokens =

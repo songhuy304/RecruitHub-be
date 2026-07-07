@@ -53,17 +53,25 @@ export class UserService implements IUserService {
       throw new NotFoundException(ERROR_USER.NOT_FOUND);
     }
 
+    const isMatchOldPassword = await this.helperEncryptionService.match(
+      user.password,
+      payload.oldPassword,
+    );
+
+    if (!isMatchOldPassword) {
+      throw new BadRequestException(ERROR_USER.OLD_PASSWORD_INCORRECT);
+    }
 
     const isMatch = await this.helperEncryptionService.match(
       user.password,
-      payload.password,
+      payload.newPassword,
     );
 
     if (isMatch) {
       throw new BadRequestException(ERROR_USER.PASSWORD_SAME);
     }
 
-    const hashedPassword = await this.helperEncryptionService.createHash(payload.password);
+    const hashedPassword = await this.helperEncryptionService.createHash(payload.newPassword);
 
     await this.userRepository.update(user.id, {
       password: hashedPassword,

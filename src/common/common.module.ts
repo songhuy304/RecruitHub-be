@@ -25,7 +25,7 @@ import { UploadModule } from './upload/upload.module';
     GuardModule,
     DatabaseModule,
     RequestModule,
-    // LoggerModule,
+    LoggerModule,
     HelperModule,
     CacheModule,
     UploadModule,

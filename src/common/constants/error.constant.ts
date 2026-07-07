@@ -6,6 +6,7 @@ export const ERROR_USER = {
   ALREADY_IN_TEAM: 'error.user.already-in-team',
   EMAIL_PROVIDER_CONFLICT: 'error.user.email-provider-conflict',
   PASSWORD_SAME: 'error.user.password-same',
+  OLD_PASSWORD_INCORRECT: 'error.user.old-password-incorrect',
 };
 
 export const ERROR_AUTH = {
