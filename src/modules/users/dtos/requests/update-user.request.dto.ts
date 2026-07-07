@@ -20,6 +20,13 @@ export class ChangePasswordDto {
     })
     @IsString()
     @IsNotEmpty()
+    oldPassword: string;
+
+    @ApiProperty({
+        required: true,
+    })
+    @IsString()
+    @IsNotEmpty()
     @Matches(REGEX_PASSWORD)
-    public password: string;
+    public newPassword: string;
 }

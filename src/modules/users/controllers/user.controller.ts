@@ -38,6 +38,7 @@ export class UserController {
   @ApiEndpoint({
     summary: 'Update user profile',
     httpStatus: HttpStatus.OK,
+    serialization: UserResponseDto,
     messageKey: 'user.profile.updated',
   })
   async updateProfile(@AuthUser() authUser: IAuthUser, @Body() payload: UpdateUserDto
