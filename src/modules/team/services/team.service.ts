@@ -15,11 +15,14 @@ import {
   PaginatedResponseDto,
 } from '@/common/response';
 import { generateCode } from '@/common/utils';
+import { NotificationType } from '@/modules/notifications/interfaces';
+import { NotificationSenderService } from '@/modules/notifications/services/notification-sender.service';
 import { TeamMemberRepository } from '@/modules/team/repositories/team-member.repository';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable, Logger } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { CreateTeamDto, InviteMembersDto, UpdateTeamDto, UpdateTeamMemberDto } from '../dtos/requests';
+import { CreateTeamDto, UpdateTeamDto, UpdateTeamMemberDto } from '../dtos/requests';
+import { TeamMembersDto } from '../dtos/requests/team-member.request';
 import {
   TeamDetailDto,
   TeamMemberGetDto,
@@ -28,13 +31,10 @@ import {
 } from '../dtos/response';
 import { ITeamService } from '../interfaces/team.interface';
 import { TeamMapper } from '../mappers';
-import { TeamRepositoryImpl } from '../repositories/team.repository';
-import { TeamRequestRepository } from '../repositories/team-request.repository';
-import { TeamMembersDto } from '../dtos/requests/team-member.request';
 import { TeamMemberMapper } from '../mappers/team-member.mapper';
+import { TeamRequestRepository } from '../repositories/team-request.repository';
+import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamPermissionService } from './team-permission.service';
-import { NotificationSenderService } from '@/modules/notifications/services/notification-sender.service';
-import { NotificationType } from '@/modules/notifications/interfaces';
 
 @Injectable()
 export class TeamService implements ITeamService {
@@ -145,11 +145,11 @@ export class TeamService implements ITeamService {
 
     return ApiGenericResponseDto.success();
   }
-  async invitations(payload: InviteMembersDto): Promise<ApiResponseDto<void>> {
-    const mails = [...new Set(payload.emails)];
+  // async invitations(payload: InviteMembersDto): Promise<ApiResponseDto<void>> {
+  //   const mails = [...new Set(payload.emails)];
 
-    return;
-  }
+  //   return;
+  // }
 
   async leaveTeam(teamId: number, authUser: IAuthUser) {
     try {
@@ -176,12 +176,15 @@ export class TeamService implements ITeamService {
         }
       });
 
-      await this.senderService.sendToUser(team.createdById, {
+      await this.senderService.notifyUser({
+        title: 'Member left team',
+        content: `User ${authUser.userId} has left your team ${team.name}`,
         type: NotificationType.MEMBER_LEFT_TEAM,
-        data: {
-          teamId: team.id,
-        }
-      })
+        userId: team.createdById,
+      }, {
+        teamId: team.id,
+        userId: authUser.userId,
+      });
 
       return ApiGenericResponseDto.success();
     } catch (error) {

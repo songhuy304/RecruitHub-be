@@ -58,10 +58,10 @@ export class TeamController {
     return this.teamService.getTeams(user);
   }
 
-  @Post('/invitations')
-  async invitations(@Body() payload: InviteMembersDto) {
-    return this.teamService.invitations(payload);
-  }
+  // @Post('/invitations')
+  // async invitations(@Body() payload: InviteMembersDto) {
+  //   return this.teamService.invitations(payload);
+  // }
 
   @Post('/create-team')
   @ApiEndpoint({

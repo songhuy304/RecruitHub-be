@@ -63,13 +63,15 @@ export class TeamRequestService implements ITeamRequestService {
       user: { id: authUser.userId },
     });
 
-    await this.senderService.sendToUser(team.createdById, {
+    await this.senderService.notifyUser({
+      title: 'New join request',
+      content: `User ${authUser.userId} has requested to join your team ${team.name}`,
       type: NotificationType.MEMBER_JOINED_TEAM,
-      data: {
-        teamId: team.id,
-      }
-    })
-
+      userId: team.createdById,
+    }, {
+      teamId: team.id,
+      userId: authUser.userId,
+    });
 
     return ApiGenericResponseDto.success();
   }
