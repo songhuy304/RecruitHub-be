@@ -17,7 +17,7 @@ export abstract class BaseRepository<TEntity extends Entity> {
   constructor(
     protected readonly repo: TypeOrmRepository<TEntity>,
     protected readonly helperQuery: HelperQueryService,
-  ) {}
+  ) { }
 
   get repository(): TypeOrmRepository<TEntity> {
     return this.repo;
@@ -53,6 +53,15 @@ export abstract class BaseRepository<TEntity extends Entity> {
     }
 
     return entity;
+  }
+
+  async updateMany(
+    where: FindOptionsWhere<TEntity>,
+    data: QueryDeepPartialEntity<TEntity>,
+  ): Promise<number> {
+    const result = await this.repo.update(where, data);
+
+    return result.affected ?? 0;
   }
 
   async remove(id: number): Promise<void> {

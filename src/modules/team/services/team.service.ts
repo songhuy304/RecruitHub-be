@@ -33,6 +33,8 @@ import { TeamRequestRepository } from '../repositories/team-request.repository';
 import { TeamMembersDto } from '../dtos/requests/team-member.request';
 import { TeamMemberMapper } from '../mappers/team-member.mapper';
 import { TeamPermissionService } from './team-permission.service';
+import { NotificationSenderService } from '@/modules/notifications/services/notification-sender.service';
+import { NotificationType } from '@/modules/notifications/interfaces';
 
 @Injectable()
 export class TeamService implements ITeamService {
@@ -46,6 +48,7 @@ export class TeamService implements ITeamService {
     private readonly teamMemberRepo: TeamMemberRepository,
     private readonly helperEncryptionService: HelperEncryptionService,
     private readonly teamPermissionService: TeamPermissionService,
+    private readonly senderService: NotificationSenderService,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -172,6 +175,13 @@ export class TeamService implements ITeamService {
           await manager.delete(TeamMemberEntity, { id: member.id });
         }
       });
+
+      await this.senderService.sendToUser(team.createdById, {
+        type: NotificationType.MEMBER_LEFT_TEAM,
+        data: {
+          teamId: team.id,
+        }
+      })
 
       return ApiGenericResponseDto.success();
     } catch (error) {

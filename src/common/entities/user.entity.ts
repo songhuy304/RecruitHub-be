@@ -9,6 +9,7 @@ import { BaseEntity } from './base.entity';
 import { TokenEntity } from './token.entity';
 import { TeamMemberEntity } from './team-member.entity';
 import { EAuthProvider, ERole } from '@/common/enums';
+import { NotificationEntity } from './notification.entity';
 
 @Entity('users')
 @Index(['email', 'provider'], { unique: true })
@@ -52,4 +53,7 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => TokenEntity, (token) => token.user)
   tokens: TokenEntity[];
+
+  @OneToMany(() => NotificationEntity, (notification) => notification.user)
+  notifications: NotificationEntity[];
 }
