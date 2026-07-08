@@ -18,11 +18,12 @@ export class NotificationGateway extends BaseGateway {
 
     handleConnection(client: Socket) {
         super.handleConnection(client);
-
         const user = client.data.user as IAuthUser;
+        client.join(`${user.userId}`);
+    }
 
-        client.join(`user:${user.userId}`);
 
-        this.logger.log(`User ${user.userId} connected`);
+    emitToUser<T>(userId: number, event: string, data: T) {
+        this.server.to(`user:${userId}`).emit(event, data);
     }
 }

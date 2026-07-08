@@ -17,6 +17,8 @@ import { TeamMemberRepository } from '../repositories/team-member.repository';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamPermissionService } from './team-permission.service';
+import { NotificationSenderService } from '@/modules/notifications/services/notification-sender.service';
+import { NotificationType } from '@/modules/notifications/interfaces';
 
 @Injectable()
 export class TeamRequestService implements ITeamRequestService {
@@ -25,6 +27,7 @@ export class TeamRequestService implements ITeamRequestService {
     private readonly teamMemberRepo: TeamMemberRepository,
     private readonly teamRequestRepo: TeamRequestRepository,
     private readonly teamPermissionService: TeamPermissionService,
+    private readonly senderService: NotificationSenderService,
     private readonly dataSource: DataSource,
   ) { }
 
@@ -36,12 +39,12 @@ export class TeamRequestService implements ITeamRequestService {
 
     if (!team) throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
 
-    const isExist = await this.teamMemberRepo.exists({
+    const teamMember = await this.teamMemberRepo.exists({
       teamId: team.id,
       userId: authUser.userId,
     })
 
-    if (isExist)
+    if (teamMember)
       throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
 
     const existedRequest = await this.teamRequestRepo.exists({
@@ -59,6 +62,13 @@ export class TeamRequestService implements ITeamRequestService {
       team,
       user: { id: authUser.userId },
     });
+
+    await this.senderService.sendToUser(team.createdById, {
+      type: NotificationType.MEMBER_JOINED_TEAM,
+      data: {
+        teamId: team.id,
+      }
+    })
 
     return ApiGenericResponseDto.success();
   }

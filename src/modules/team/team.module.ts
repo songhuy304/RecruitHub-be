@@ -11,12 +11,14 @@ import { TeamRequestRepository } from './repositories/team-request.repository';
 import { TeamRequestService } from './services/team-request.service';
 import { TeamMemberRepository } from './repositories/team-member.repository';
 import { TeamPermissionService } from './services/team-permission.service';
+import { NotificationModule } from '../notifications/notification.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([TeamEntity, TeamRequestEntity, TeamMemberEntity]),
     HelperModule,
     UserModule,
+    NotificationModule
   ],
   controllers: [TeamController],
   providers: [
