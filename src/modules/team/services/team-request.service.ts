@@ -116,7 +116,6 @@ export class TeamRequestService implements ITeamRequestService {
   ): Promise<ApiGenericResponseDto> {
     await this.teamPermissionService.requireOwner(payload.teamId, authUser.userId);
 
-
     const { teamId, id: requestId } = payload;
     const request = await this.findRequestById(requestId);
 
@@ -137,6 +136,15 @@ export class TeamRequestService implements ITeamRequestService {
       await manager.update(TeamRequestEntity, request.id, {
         status: ETeamRequestStatus.APPROVED,
       });
+    });
+
+    await this.senderService.notifyUser({
+      title: 'Team Join Request Approved',
+      content: `Your request to join ${request.team.name} has been approved`,
+      type: NotificationType.TEAM_JOIN_REQUEST_APPROVED,
+      userId: request.user.id,
+    }, {
+      teamId: request.team.id,
     });
 
     return ApiGenericResponseDto.success();
@@ -162,6 +170,16 @@ export class TeamRequestService implements ITeamRequestService {
     await this.teamRequestRepo.update(request.id, {
       status: ETeamRequestStatus.REJECTED,
     });
+
+    await this.senderService.notifyUser({
+      title: 'Team Join Request Rejected',
+      content: `Your request to join ${request.team.name} has been rejected`,
+      type: NotificationType.TEAM_JOIN_REQUEST_REJECTED,
+      userId: request.user.id,
+    }, {
+      teamId: request.team.id,
+    });
+
 
     return ApiGenericResponseDto.success();
   }

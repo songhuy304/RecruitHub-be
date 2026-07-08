@@ -111,12 +111,12 @@ export class TeamController {
     return this.teamRequestService.rejectJoinRequest(payload, user);
   }
 
-  @Post('/leave')
+  @Post('/leave/:id')
   async leaveTeam(
-    @Body() payload: { teamId: number },
+    @Param('id', ParseIntPipe) teamId: number,
     @AuthUser() user: IAuthUser,
   ) {
-    return this.teamService.leaveTeam(payload.teamId, user);
+    return this.teamService.leaveTeam(teamId, user);
   }
 
   @Delete(':teamId/members/:id')
