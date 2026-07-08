@@ -10,6 +10,10 @@ import { Socket } from "socket.io";
     },
 })
 export class NotificationGateway extends BaseGateway {
+    private getUserRoom(userId: number) {
+        return `user:${userId}`;
+    }
+
     constructor(
         jwt: HelperEncryptionService,
     ) {
@@ -19,11 +23,11 @@ export class NotificationGateway extends BaseGateway {
     handleConnection(client: Socket) {
         super.handleConnection(client);
         const user = client.data.user as IAuthUser;
-        client.join(`${user.userId}`);
+        client.join(this.getUserRoom(user.userId));
     }
 
 
     emitToUser<T>(userId: number, event: string, data: T) {
-        this.server.to(`user:${userId}`).emit(event, data);
+        this.server.to(this.getUserRoom(userId)).emit(event, data);
     }
 }

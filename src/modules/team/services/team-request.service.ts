@@ -70,6 +70,7 @@ export class TeamRequestService implements ITeamRequestService {
       }
     })
 
+
     return ApiGenericResponseDto.success();
   }
 
