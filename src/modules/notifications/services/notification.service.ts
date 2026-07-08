@@ -23,7 +23,10 @@ export class NotificationService {
             { limit, page },
             {
                 where: { userId: authUser.userId },
-                sort: { createdAt: SortOrder.ASC },
+                sort: {
+                    createdAt: SortOrder.DESC,
+                    id: SortOrder.DESC,
+                },
             },
         );
 
