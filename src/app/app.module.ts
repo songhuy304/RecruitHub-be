@@ -6,9 +6,18 @@ import { AuthModule } from '@/modules/auth/auth.module';
 import { TeamModule } from '@/modules/team/team.module';
 import { WebsocketModule } from '@/modules/websocket/websocket.module';
 import { NotificationModule } from '@/modules/notifications/notification.module';
+import { MetadataModule } from '@/modules/metadata/metadata.module';
 
 @Module({
-  imports: [TerminusModule, CommonModule, AuthModule, TeamModule, WebsocketModule, NotificationModule],
+  imports: [
+    TerminusModule,
+    CommonModule,
+    AuthModule,
+    TeamModule,
+    WebsocketModule,
+    NotificationModule,
+    MetadataModule,
+  ],
   controllers: [HealthController],
 })
-export class AppModule { }
+export class AppModule {}

@@ -1,3 +1,4 @@
+import { DepartmentEntity } from './department.entity';
 import { JobEntity } from './job.entity';
 import { LocationEntity } from './location.entity';
 import { NotificationEntity } from './notification.entity';
@@ -16,6 +17,7 @@ export * from './team-member.entity';
 export * from './job.entity';
 export * from './location.entity';
 export * from './notification.entity';
+export * from './department.entity';
 
 export const ALL_ENTITIES = [
   TeamRequestEntity,
@@ -26,4 +28,5 @@ export const ALL_ENTITIES = [
   TeamEntity,
   TeamMemberEntity,
   NotificationEntity,
+  DepartmentEntity,
 ];

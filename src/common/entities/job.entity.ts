@@ -1,5 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { BaseEntity } from './base.entity';
+import { UserEntity } from './user.entity';
+import { TeamEntity } from './team.entity';
 
 export enum JobStatus {
   DRAFT = 'DRAFT',
@@ -105,4 +113,18 @@ export class JobEntity extends BaseEntity {
 
   @Column()
   location: string;
+
+  @Column({
+    type: 'text',
+    array: true,
+  })
+  departments: string[];
+
+  @ManyToOne(() => UserEntity)
+  @JoinColumn({ name: 'createdBy' })
+  createdBy: UserEntity;
+
+  @ManyToOne(() => TeamEntity)
+  @JoinColumn({ name: 'teamId' })
+  team: TeamEntity;
 }
