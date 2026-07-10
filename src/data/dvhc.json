@@ -1,0 +1,86 @@
+[
+  {
+    "code": "01",
+    "name": "Thành phố Hà Nội",
+    "englishName": "Ha Noi",
+    "administrativeLevel": "Thành phố Trung ương",
+    "decree": ""
+  },
+  {
+    "code": "31",
+    "name": "Thành phố Hải Phòng",
+    "englishName": "Hai Phong",
+    "administrativeLevel": "Thành phố Trung ương",
+    "decree": "202/2025/QH15 - 12/06/2025"
+  },
+  {
+    "code": "40",
+    "name": "Tỉnh Nghệ An",
+    "englishName": "Nghe An",
+    "administrativeLevel": "Tỉnh",
+    "decree": "202/2025/QH15 - 12/06/2025"
+  },
+  {
+    "code": "42",
+    "name": "Tỉnh Hà Tĩnh",
+    "englishName": "Ha Tinh",
+    "administrativeLevel": "Tỉnh",
+    "decree": "202/2025/QH15 - 12/06/2025"
+  },
+  {
+    "code": "44",
+    "name": "Tỉnh Quảng Trị",
+    "englishName": "Quang Tri",
+    "administrativeLevel": "Tỉnh",
+    "decree": "202/2025/QH15 - 12/06/2025"
+  },
+  {
+    "code": "46",
+    "name": "Thành phố Huế",
+    "englishName": "Hue",
+    "administrativeLevel": "Thành phố Trung ương",
+    "decree": "202/2025/QH15 - 12/06/2025"
+  },
+  {
+    "code": "48",
+    "name": "Thành phố Đà Nẵng",
+    "englishName": "Da Nang",
+    "administrativeLevel": "Thành phố Trung ương",
+    "decree": "202/2025/QH15 - 12/06/2025"
+  },
+  {
+    "code": "51",
+    "name": "Tỉnh Quảng Ngãi",
+    "englishName": "Quang Ngai",
+    "administrativeLevel": "Tỉnh",
+    "decree": "202/2025/QH15 - 12/06/2025"
+  },
+  {
+    "code": "52",
+    "name": "Tỉnh Gia Lai",
+    "englishName": "Gia Lai",
+    "administrativeLevel": "Tỉnh",
+    "decree": ""
+  },
+  {
+    "code": "56",
+    "name": "Tỉnh Khánh Hòa",
+    "englishName": "",
+    "administrativeLevel": "Tỉnh",
+    "decree": "202/2025/QH15 - 12/06/2025"
+  },
+  {
+    "code": "79",
+    "name": "Thành phố Hồ Chí Minh",
+    "englishName": "Ho Chi Minh City",
+    "administrativeLevel": "Thành phố Trung ương",
+    "decree": "202/2025/QH15 - 12/06/2025"
+  },
+  {
+    "code": "80",
+    "name": "Tỉnh Tây Ninh",
+    "englishName": "Tay Ninh",
+    "administrativeLevel": "Tỉnh",
+    "decree": ""
+  }
+]

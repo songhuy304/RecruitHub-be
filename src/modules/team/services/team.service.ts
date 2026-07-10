@@ -1,7 +1,12 @@
 import { ERROR_TEAM } from '@/common/constants';
 import { TeamMemberEntity, TeamRequestEntity } from '@/common/entities';
 import { TeamEntity } from '@/common/entities/team.entity';
-import { ETeamRequestStatus, ETeamRole, ETeamType, SortOrder } from '@/common/enums';
+import {
+  ETeamRequestStatus,
+  ETeamRole,
+  ETeamType,
+  SortOrder,
+} from '@/common/enums';
 import {
   BadRequestException,
   ForbiddenException,
@@ -20,8 +25,13 @@ import { NotificationSenderService } from '@/modules/notifications/services/noti
 import { TeamMemberRepository } from '@/modules/team/repositories/team-member.repository';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable, Logger } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { CreateTeamDto, UpdateTeamDto, UpdateTeamMemberDto } from '../dtos/requests';
+import { DataSource, In } from 'typeorm';
+import {
+  CreateTeamDto,
+  InviteMembersDto,
+  UpdateTeamDto,
+  UpdateTeamMemberDto,
+} from '../dtos/requests';
 import { TeamMembersDto } from '../dtos/requests/team-member.request';
 import {
   TeamDetailDto,
@@ -50,7 +60,7 @@ export class TeamService implements ITeamService {
     private readonly teamPermissionService: TeamPermissionService,
     private readonly senderService: NotificationSenderService,
     private readonly dataSource: DataSource,
-  ) { }
+  ) {}
 
   async getTeams(
     authUser: IAuthUser,
@@ -72,7 +82,9 @@ export class TeamService implements ITeamService {
       return ApiResponseDto.success([]);
     }
 
-    return ApiResponseDto.success(TeamMapper.toResponseList(teams, authUser.userId));
+    return ApiResponseDto.success(
+      TeamMapper.toResponseList(teams, authUser.userId),
+    );
   }
 
   async createTeam(
@@ -114,7 +126,11 @@ export class TeamService implements ITeamService {
     }
   }
 
-  async updateTeam(payload: UpdateTeamDto, teamId: number, authUser: IAuthUser): Promise<ApiGenericResponseDto> {
+  async updateTeam(
+    payload: UpdateTeamDto,
+    teamId: number,
+    authUser: IAuthUser,
+  ): Promise<ApiGenericResponseDto> {
     await this.teamPermissionService.requireOwner(teamId, authUser.userId);
 
     const team = await this.teamRepo.findOneBy({ id: teamId });
@@ -127,10 +143,14 @@ export class TeamService implements ITeamService {
     });
 
     return ApiGenericResponseDto.success();
-
   }
 
-  async updateMemberRole(teamId: number, userId: number, payload: UpdateTeamMemberDto, authUser: IAuthUser): Promise<ApiGenericResponseDto> {
+  async updateMemberRole(
+    teamId: number,
+    userId: number,
+    payload: UpdateTeamMemberDto,
+    authUser: IAuthUser,
+  ): Promise<ApiGenericResponseDto> {
     await this.teamPermissionService.requireOwner(teamId, authUser.userId);
 
     const user = await this.teamMemberRepo.findOneBy({ teamId, userId });
@@ -142,14 +162,20 @@ export class TeamService implements ITeamService {
       role: payload.role,
     });
 
+    return ApiGenericResponseDto.success();
+  }
+  async invitations(payload: InviteMembersDto): Promise<ApiGenericResponseDto> {
+    const mails = [...new Set(payload.emails)];
+
+    await this.userRepo.repository.find({
+      where: {
+        email: In(mails),
+      },
+      select: { email: true },
+    });
 
     return ApiGenericResponseDto.success();
   }
-  // async invitations(payload: InviteMembersDto): Promise<ApiResponseDto<void>> {
-  //   const mails = [...new Set(payload.emails)];
-
-  //   return;
-  // }
 
   async leaveTeam(teamId: number, authUser: IAuthUser) {
     try {
@@ -176,15 +202,18 @@ export class TeamService implements ITeamService {
         }
       });
 
-      await this.senderService.notifyUser({
-        title: 'Member left team',
-        content: `User ${authUser.userId} has left your team ${team.name}`,
-        type: NotificationType.MEMBER_LEFT_TEAM,
-        userId: team.createdById,
-      }, {
-        teamId: team.id,
-        userId: authUser.userId,
-      });
+      await this.senderService.notifyUser(
+        {
+          title: 'Member left team',
+          content: `User ${authUser.userId} has left your team ${team.name}`,
+          type: NotificationType.MEMBER_LEFT_TEAM,
+          userId: team.createdById,
+        },
+        {
+          teamId: team.id,
+          userId: authUser.userId,
+        },
+      );
 
       return ApiGenericResponseDto.success();
     } catch (error) {
@@ -314,11 +343,11 @@ export class TeamService implements ITeamService {
         where: { teamId },
         filters: search
           ? {
-            or: [
-              { field: 'user.fullName', op: 'ilike', value: search },
-              { field: 'user.email', op: 'ilike', value: search },
-            ],
-          }
+              or: [
+                { field: 'user.fullName', op: 'ilike', value: search },
+                { field: 'user.email', op: 'ilike', value: search },
+              ],
+            }
           : undefined,
         relations: { user: true },
         sort: { createdAt: SortOrder.ASC },

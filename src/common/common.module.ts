@@ -9,6 +9,7 @@ import { HelperModule } from './helper/helper.module';
 import { GuardModule } from './guard/guard.module';
 import { CacheModule } from './cache/cache.module';
 import { UploadModule } from './upload/upload.module';
+import { BullMqModule } from './bullmq/bullmq.module';
 
 @Module({
   imports: [
@@ -29,7 +30,8 @@ import { UploadModule } from './upload/upload.module';
     HelperModule,
     CacheModule,
     UploadModule,
+    BullMqModule,
   ],
-  exports: [DatabaseModule, CacheModule],
+  exports: [DatabaseModule, CacheModule, BullMqModule],
 })
-export class CommonModule { }
+export class CommonModule {}

@@ -2,6 +2,7 @@ import { DatabaseService } from './services/database.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ALL_ENTITIES } from '../entities';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: () => ({
         type: 'postgres',
         url: process.env.DATABASE_URL,
+        entities: ALL_ENTITIES,
         autoLoadEntities: true,
         synchronize: false,
         ssl: { rejectUnauthorized: false },
