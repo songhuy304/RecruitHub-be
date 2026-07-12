@@ -7,6 +7,7 @@ import { TeamModule } from '@/modules/team/team.module';
 import { WebsocketModule } from '@/modules/websocket/websocket.module';
 import { NotificationModule } from '@/modules/notifications/notification.module';
 import { MetadataModule } from '@/modules/metadata/metadata.module';
+import { JobModule } from '@/modules/jobs/job.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { MetadataModule } from '@/modules/metadata/metadata.module';
     WebsocketModule,
     NotificationModule,
     MetadataModule,
+    JobModule,
   ],
   controllers: [HealthController],
 })

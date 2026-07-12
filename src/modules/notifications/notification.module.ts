@@ -9,14 +9,17 @@ import { NotificationRepositoryImpl } from './repositories/notification.reposito
 import { NotificationController } from './controllers/notification.controller';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([NotificationEntity]),
-        HelperModule,
-        WebsocketModule
-
-    ],
-    controllers: [NotificationController],
-    providers: [NotificationSenderService, NotificationService, NotificationRepositoryImpl],
-    exports: [NotificationSenderService, NotificationService],
+  imports: [
+    TypeOrmModule.forFeature([NotificationEntity]),
+    HelperModule,
+    WebsocketModule,
+  ],
+  controllers: [NotificationController],
+  providers: [
+    NotificationSenderService,
+    NotificationService,
+    NotificationRepositoryImpl,
+  ],
+  exports: [NotificationSenderService, NotificationService],
 })
-export class NotificationModule { }
+export class NotificationModule {}
