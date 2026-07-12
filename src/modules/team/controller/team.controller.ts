@@ -43,7 +43,7 @@ export class TeamController {
   constructor(
     private readonly teamService: TeamService,
     private readonly teamRequestService: TeamRequestService,
-  ) { }
+  ) {}
 
   @Get('/')
   @ApiEndpoint({
@@ -58,10 +58,10 @@ export class TeamController {
     return this.teamService.getTeams(user);
   }
 
-  // @Post('/invitations')
-  // async invitations(@Body() payload: InviteMembersDto) {
-  //   return this.teamService.invitations(payload);
-  // }
+  @Post('/invitations')
+  async invitations(@Body() payload: InviteMembersDto) {
+    return this.teamService.invitations(payload);
+  }
 
   @Post('/create-team')
   @ApiEndpoint({
@@ -73,14 +73,17 @@ export class TeamController {
     return this.teamService.createTeam(query, user);
   }
 
-
   @Patch(':teamId')
   @ApiEndpoint({
     summary: '',
     httpStatus: HttpStatus.OK,
     messageKey: 'Successfully updated team',
   })
-  async updateTeam(@Body() query: UpdateTeamDto, @Param('teamId', ParseIntPipe) teamId: number, @AuthUser() user: IAuthUser) {
+  async updateTeam(
+    @Body() query: UpdateTeamDto,
+    @Param('teamId', ParseIntPipe) teamId: number,
+    @AuthUser() user: IAuthUser,
+  ) {
     return this.teamService.updateTeam(query, teamId, user);
   }
 
@@ -92,22 +95,28 @@ export class TeamController {
   @Get('/join-requests')
   @ApiEndpoint({
     summary: '',
-    serialization: [TeamJoinRequestDto],
-    isArray: true,
+    serialization: TeamJoinRequestDto,
     httpStatus: HttpStatus.OK,
     messageKey: '',
+    paginated: true,
   })
   async getJoinRequests(@Query() query: JoinRequestDto) {
     return this.teamRequestService.getJoinRequests(query);
   }
 
   @Post('/join-requests/approve')
-  async approveJoinRequest(@Body() payload: ApproveJoinRequestDto, @AuthUser() user: IAuthUser) {
+  async approveJoinRequest(
+    @Body() payload: ApproveJoinRequestDto,
+    @AuthUser() user: IAuthUser,
+  ) {
     return this.teamRequestService.approveJoinRequest(payload, user);
   }
 
   @Post('/join-requests/reject')
-  async rejectJoinRequest(@Body() payload: RejectJoinRequestDto, @AuthUser() user: IAuthUser) {
+  async rejectJoinRequest(
+    @Body() payload: RejectJoinRequestDto,
+    @AuthUser() user: IAuthUser,
+  ) {
     return this.teamRequestService.rejectJoinRequest(payload, user);
   }
 
@@ -166,7 +175,7 @@ export class TeamController {
     summary: '',
     serialization: TeamMemberGetDto,
     httpStatus: HttpStatus.OK,
-    isArray: true,
+    paginated: true,
     messageKey: '',
   })
   async getTeamMembers(@Query() query: TeamMembersDto) {

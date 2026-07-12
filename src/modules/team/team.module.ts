@@ -12,6 +12,7 @@ import { TeamRequestService } from './services/team-request.service';
 import { TeamMemberRepository } from './repositories/team-member.repository';
 import { TeamPermissionService } from './services/team-permission.service';
 import { NotificationModule } from '../notifications/notification.module';
+import { TeamMailService } from './services/team-mail.service';
 
 @Module({
   imports: [
@@ -27,7 +28,8 @@ import { NotificationModule } from '../notifications/notification.module';
     TeamMemberRepository,
     TeamService,
     TeamRequestService,
-    TeamPermissionService
+    TeamPermissionService,
+    TeamMailService
   ],
   exports: [TeamRepositoryImpl, TeamMemberRepository, TeamService, TeamPermissionService],
 })

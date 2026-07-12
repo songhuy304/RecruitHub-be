@@ -45,6 +45,7 @@ import { TeamMemberMapper } from '../mappers/team-member.mapper';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamPermissionService } from './team-permission.service';
+import { TeamMailService } from './team-mail.service';
 
 @Injectable()
 export class TeamService implements ITeamService {
@@ -58,6 +59,7 @@ export class TeamService implements ITeamService {
     private readonly teamMemberRepo: TeamMemberRepository,
     private readonly helperEncryptionService: HelperEncryptionService,
     private readonly teamPermissionService: TeamPermissionService,
+    private readonly teamMailService: TeamMailService,
     private readonly senderService: NotificationSenderService,
     private readonly dataSource: DataSource,
   ) {}
@@ -164,15 +166,29 @@ export class TeamService implements ITeamService {
 
     return ApiGenericResponseDto.success();
   }
+
   async invitations(payload: InviteMembersDto): Promise<ApiGenericResponseDto> {
+    const team = await this.teamRepo.findOneBy({ id: payload.teamId });
+    if (!team) {
+      throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
+    }
+
     const mails = [...new Set(payload.emails)];
 
-    await this.userRepo.repository.find({
+    const users = await this.userRepo.repository.find({
       where: {
         email: In(mails),
       },
-      select: { email: true },
+      select: { email: true, id: true, fullName: true },
     });
+
+    for (const user of users) {
+      await this.teamMailService.inviteMemberMail(
+        user,
+        team.name,
+        team.inviteCode,
+      );
+    }
 
     return ApiGenericResponseDto.success();
   }
