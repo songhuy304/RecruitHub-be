@@ -34,6 +34,12 @@ export enum JobLevel {
   LEAD = 'LEAD',
 }
 
+export enum WorkLocationType {
+  AT_OFFICE = 'AT_OFFICE',
+  REMOTE = 'REMOTE',
+  HYBRID = 'HYBRID',
+}
+
 @Entity('jobs')
 export class JobEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
@@ -95,6 +101,12 @@ export class JobEntity extends BaseEntity {
   })
   salaryMax: number;
 
+  @Column({ length: 3, default: 'VND' })
+  currency: string;
+
+  @Column({ nullable: true })
+  isNegotiable: boolean;
+
   @Column({
     nullable: true,
   })
@@ -111,6 +123,9 @@ export class JobEntity extends BaseEntity {
   @Column({ default: false })
   isPinned: boolean;
 
+  @Column({ nullable: true })
+  officeAddress: string;
+
   @Column()
   location: string;
 
@@ -119,6 +134,24 @@ export class JobEntity extends BaseEntity {
     array: true,
   })
   departments: string[];
+
+  @Column('text', {
+    array: true,
+    default: [],
+  })
+  skills: string[];
+
+  @Column({
+    type: 'enum',
+    enum: WorkLocationType,
+  })
+  workLocationType: WorkLocationType;
+
+  @Column({ default: 0 })
+  viewCount: number;
+
+  @Column({ default: false })
+  isUrgent: boolean;
 
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'createdBy' })

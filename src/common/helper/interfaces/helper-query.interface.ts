@@ -11,8 +11,6 @@ export interface PaginationOptions {
   limit?: number;
 }
 
-// ─── Filter DSL (NestJS-Query style) ─────────────────────────────────────────
-
 export type FilterOperator =
   | 'eq'
   | 'not'
@@ -35,41 +33,6 @@ export interface FilterRule {
   value?: unknown;
 }
 
-/**
- * NestJS-Query style filter — supports nested and/or groups.
- *
- * @example OR search
- * {
- *   or: [
- *     { field: 'user.fullName', op: 'ilike', value: 'john' },
- *     { field: 'user.email', op: 'ilike', value: 'john' },
- *   ],
- * }
- *
- * @example AND conditions
- * {
- *   and: [
- *     { field: 'status', op: 'eq', value: 'active' },
- *     { field: 'role', op: 'in', value: ['admin', 'mod'] },
- *   ],
- * }
- *
- * @example Nested (A AND B) OR C
- * {
- *   or: [
- *     {
- *       and: [
- *         { field: 'teamId', op: 'eq', value: 1 },
- *         { field: 'role', op: 'eq', value: 'admin' },
- *       ],
- *     },
- *     { field: 'userId', op: 'eq', value: 42 },
- *   ],
- * }
- *
- * When both `and` and `or` are present at the same level they are combined with AND:
- * (and rules…) AND (or rules…)
- */
 export type FilterInput = {
   and?: Array<FilterRule | FilterInput>;
   or?: Array<FilterRule | FilterInput>;

@@ -21,14 +21,48 @@ const OPS_REQUIRE_VALUE: FilterOperator[] = [
   'in',
 ];
 
+function isEmptyValue(value: unknown): boolean {
+  return value === undefined || value === null;
+}
+
 function isRuleValid(rule: FilterRule): boolean {
-  return !OPS_REQUIRE_VALUE.includes(rule.op) || rule.value !== undefined;
+  if (!OPS_REQUIRE_VALUE.includes(rule.op)) return true;
+  if (isEmptyValue(rule.value)) return false;
+
+  if (rule.op === 'in') {
+    return Array.isArray(rule.value) && rule.value.length > 0;
+  }
+
+  if (rule.op === 'between') {
+    if (!Array.isArray(rule.value) || rule.value.length < 2) return false;
+    const [from, to] = rule.value;
+    return !isEmptyValue(from) && !isEmptyValue(to);
+  }
+
+  if (rule.op === 'dateRange') {
+    if (!Array.isArray(rule.value)) return false;
+    const [from, to] = rule.value;
+    return !isEmptyValue(from) || !isEmptyValue(to);
+  }
+
+  return true;
 }
 
 export function isFilterRule(
   item: FilterRule | FilterInput,
 ): item is FilterRule {
   return 'field' in item && 'op' in item;
+}
+
+function isFilterItemValid(item: FilterRule | FilterInput): boolean {
+  if (isFilterRule(item)) return isRuleValid(item);
+  return hasValidFilters(item);
+}
+
+export function hasValidFilters(input: FilterInput): boolean {
+  const and = (input.and ?? []).filter(isFilterItemValid);
+  const or = (input.or ?? []).filter(isFilterItemValid);
+  return and.length > 0 || or.length > 0;
 }
 
 function applyRule(
@@ -83,11 +117,20 @@ function applyRule(
       break;
     }
     case 'dateRange': {
-      const [from, to] = value as [Date | string, Date | string];
-      qb[method](`${col} BETWEEN :${param}_from AND :${param}_to`, {
-        [`${param}_from`]: from,
-        [`${param}_to`]: to,
-      });
+      const [from, to] = value as [
+        Date | string | null | undefined,
+        Date | string | null | undefined,
+      ];
+      if (!isEmptyValue(from) && !isEmptyValue(to)) {
+        qb[method](`${col} BETWEEN :${param}_from AND :${param}_to`, {
+          [`${param}_from`]: from,
+          [`${param}_to`]: to,
+        });
+      } else if (!isEmptyValue(from)) {
+        qb[method](`${col} >= :${param}_from`, { [`${param}_from`]: from });
+      } else if (!isEmptyValue(to)) {
+        qb[method](`${col} <= :${param}_to`, { [`${param}_to`]: to });
+      }
       break;
     }
     case 'in':
@@ -109,9 +152,9 @@ function applyFilterItems(
   let isFirst = true;
 
   for (const item of items) {
-    if (isFilterRule(item)) {
-      if (!isRuleValid(item)) continue;
+    if (!isFilterItemValid(item)) continue;
 
+    if (isFilterRule(item)) {
       const method = isFirst
         ? 'where'
         : combinator === 'or'
@@ -142,7 +185,8 @@ export function applyFilterInput(
   input: FilterInput,
   resolveColumn: (field: string) => string,
 ): void {
-  const { and = [], or = [] } = input;
+  const and = (input.and ?? []).filter(isFilterItemValid);
+  const or = (input.or ?? []).filter(isFilterItemValid);
 
   if (and.length === 0 && or.length === 0) return;
 
