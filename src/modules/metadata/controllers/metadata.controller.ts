@@ -8,7 +8,7 @@ import { PublicRoute } from '@/common/guard/decorator';
 
 @PublicRoute()
 @ApiTags('Common')
-@Controller('Common')
+@Controller('common')
 export class MetadataController {
   constructor(private readonly metadataService: MetadataService) {}
 

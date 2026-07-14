@@ -5,5 +5,6 @@ export enum ERole {
 
 export enum ETeamRole {
   OWNER = 'OWNER',
+  ADMIN = 'ADMIN',
   MEMBER = 'MEMBER',
 }

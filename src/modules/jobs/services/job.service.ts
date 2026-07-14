@@ -29,42 +29,7 @@ export class JobService {
       sort,
     } = query;
 
-    const { sortBy, sortOrder } = sort;
-
-    const andFilters = [];
-
-    if (status) {
-      andFilters.push({ field: 'status', op: 'eq', value: status });
-    }
-    if (jobType) {
-      andFilters.push({ field: 'employmentType', op: 'eq', value: jobType });
-    }
-    if (level) {
-      andFilters.push({ field: 'level', op: 'eq', value: level });
-    }
-    if (isPinned !== undefined) {
-      andFilters.push({ field: 'isPinned', op: 'eq', value: isPinned });
-    }
-    if (location) {
-      andFilters.push({ field: 'location', op: 'ilike', value: location });
-    }
-    if (q) {
-      andFilters.push({
-        or: [
-          { field: 'title', op: 'ilike', value: q },
-          { field: 'description', op: 'ilike', value: q },
-        ],
-      });
-    }
-    if (createdAt) {
-      if (createdAt.from || createdAt.to) {
-        andFilters.push({
-          field: 'createdAt',
-          op: 'dateRange',
-          value: [createdAt.from, createdAt.to],
-        });
-      }
-    }
+    const { sortBy, sortOrder } = sort || {};
 
     const jobs = await this.jobRepo.findMany(
       { limit, page },
@@ -78,9 +43,28 @@ export class JobService {
           team: true,
         },
         sort: {
-          [sortBy]: sortOrder || SortOrder.DESC,
+          [sortBy || 'createdAt']: sortOrder || SortOrder.DESC,
         },
-        filters: andFilters.length > 0 ? { and: andFilters } : undefined,
+        filters: {
+          and: [
+            { field: 'status', op: 'eq', value: status },
+            { field: 'employmentType', op: 'eq', value: jobType },
+            { field: 'level', op: 'eq', value: level },
+            { field: 'isPinned', op: 'eq', value: isPinned },
+            { field: 'location', op: 'ilike', value: location },
+            {
+              or: [
+                { field: 'title', op: 'ilike', value: q },
+                { field: 'description', op: 'ilike', value: q },
+              ],
+            },
+            {
+              field: 'createdAt',
+              op: 'dateRange',
+              value: createdAt ? [createdAt.from, createdAt.to] : undefined,
+            },
+          ],
+        },
       },
     );
 

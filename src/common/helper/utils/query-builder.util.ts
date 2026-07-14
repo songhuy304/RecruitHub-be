@@ -1,6 +1,9 @@
 import { SortOrder } from '@/common/enums';
 import { QueryOptions } from '@/common/helper/interfaces/helper-query.interface';
-import { applyFilterInput } from '@/common/helper/utils/query-filter.util';
+import {
+  applyFilterInput,
+  hasValidFilters,
+} from '@/common/helper/utils/query-filter.util';
 import { resetQueryParams } from '@/common/helper/utils/query-param.util';
 import { createRelationQueryContext } from '@/common/helper/utils/query-relation.util';
 import {
@@ -57,7 +60,7 @@ export function buildSelectQueryBuilder<T extends ObjectLiteral>(
     });
   }
 
-  if (filters) {
+  if (filters && hasValidFilters(filters)) {
     qb.andWhere(
       new Brackets((filterQb) =>
         applyFilterInput(filterQb, filters, resolveColumn),
