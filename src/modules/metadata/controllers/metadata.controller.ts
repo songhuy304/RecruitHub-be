@@ -14,7 +14,7 @@ export class MetadataController {
 
   @Get('locations')
   @ApiEndpoint({
-    summary: 'Get all locations',
+    summary: 'Get all locations ',
     serialization: [LocationResponseDto],
     httpStatus: HttpStatus.OK,
     isArray: true,
