@@ -2,7 +2,7 @@ import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { MetadataService } from '../services/metadata.service';
 import { ApiResponseDto } from '@/common/response';
-import { LocationResponseDto } from '../dtos';
+import { DepartmentResponseDto, LocationResponseDto } from '../dtos';
 import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
 import { PublicRoute } from '@/common/guard/decorator';
 
@@ -22,5 +22,17 @@ export class MetadataController {
   })
   async getAllLocations(): Promise<ApiResponseDto<LocationResponseDto[]>> {
     return this.metadataService.getAllLocations();
+  }
+
+  @Get('departments')
+  @ApiEndpoint({
+    summary: 'Get all departments ',
+    serialization: [DepartmentResponseDto],
+    httpStatus: HttpStatus.OK,
+    isArray: true,
+    messageKey: '',
+  })
+  async getAllDepartments(): Promise<ApiResponseDto<DepartmentResponseDto[]>> {
+    return this.metadataService.getAllDepartments();
   }
 }

@@ -12,7 +12,6 @@ import { TeamEntity } from './team.entity';
 export enum JobStatus {
   DRAFT = 'DRAFT',
   OPEN = 'OPEN',
-  ON_HOLD = 'ON_HOLD',
   CLOSED = 'CLOSED',
   ARCHIVED = 'ARCHIVED',
 }

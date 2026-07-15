@@ -1,0 +1,92 @@
+[
+  {
+    "code": "frontend",
+    "name": "Frontend Development"
+  },
+  {
+    "code": "backend",
+    "name": "Backend Development"
+  },
+  {
+    "code": "fullstack",
+    "name": "Full Stack Development"
+  },
+  {
+    "code": "mobile",
+    "name": "Mobile Development"
+  },
+  {
+    "code": "devops",
+    "name": "DevOps"
+  },
+  {
+    "code": "qc",
+    "name": "Quality Control (QC)"
+  },
+  {
+    "code": "data-engineering",
+    "name": "Data Engineering"
+  },
+  {
+    "code": "data-science",
+    "name": "Data Science"
+  },
+  {
+    "code": "machine-learning",
+    "name": "Machine Learning"
+  },
+
+  {
+    "code": "business-intelligence",
+    "name": "Business Intelligence"
+  },
+
+  {
+    "code": "cloud-engineering",
+    "name": "Cloud Engineering"
+  },
+  {
+    "code": "network-engineering",
+    "name": "Network Engineering"
+  },
+  {
+    "code": "embedded",
+    "name": "Embedded Systems"
+  },
+  {
+    "code": "game-development",
+    "name": "Game Development"
+  },
+  {
+    "code": "blockchain",
+    "name": "Blockchain"
+  },
+  {
+    "code": "ui-ux",
+    "name": "UI/UX Design"
+  },
+  {
+    "code": "product-management",
+    "name": "Product Management"
+  },
+  {
+    "code": "project-management",
+    "name": "Project Management"
+  },
+  {
+    "code": "business-analysis",
+    "name": "Business Analysis"
+  },
+  {
+    "code": "solution-architecture",
+    "name": "Solution Architecture"
+  },
+  {
+    "code": "technical-support",
+    "name": "Technical Support"
+  },
+  {
+    "code": "it-helpdesk",
+    "name": "IT Helpdesk"
+  }
+]

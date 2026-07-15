@@ -1,16 +1,23 @@
+import { ERROR_JOB } from '@/common/constants';
+import { SortOrder } from '@/common/enums';
+import { NotFoundException } from '@/common/filters/exception';
 import { IAuthUser } from '@/common/request/interfaces';
-import { PaginatedResponseDto } from '@/common/response';
+import { ApiGenericResponseDto, PaginatedResponseDto } from '@/common/response';
 import { Injectable, Logger } from '@nestjs/common';
+import { CreateJobDto } from '../dtos/requests';
 import { JobRequestDto } from '../dtos/requests/job.get.dto';
 import { JobResponseDto } from '../dtos/responses/job.response.dto';
 import { JobMapper } from '../mappers/job.mapper';
 import { jobRepositoryImpl } from '../repositories/job.repository';
-import { SortOrder } from '@/common/enums';
+import { TeamPermissionService } from '@/modules/team/services/team-permission.service';
 
 @Injectable()
 export class JobService {
   private readonly logger = new Logger(JobService.name);
-  constructor(private readonly jobRepo: jobRepositoryImpl) {}
+  constructor(
+    private readonly jobRepo: jobRepositoryImpl,
+    private readonly teamPermissionService: TeamPermissionService,
+  ) {}
 
   async getAllJobs(
     query: JobRequestDto,
@@ -70,5 +77,62 @@ export class JobService {
 
     const dataMap = JobMapper.toResponses(jobs.data);
     return PaginatedResponseDto.success(dataMap, jobs.meta);
+  }
+
+  async createJob(
+    payload: CreateJobDto,
+    user: IAuthUser,
+  ): Promise<ApiGenericResponseDto> {
+    try {
+      await this.teamPermissionService.requireOwnerOrAdmin(
+        user.teamId,
+        user.userId,
+      );
+
+      await this.jobRepo.create({
+        ...payload,
+        team: {
+          id: user.teamId,
+        },
+      });
+    } catch (error) {
+      this.logger.error('Error creating job', error);
+      throw new Error('Failed to create job');
+    }
+
+    return ApiGenericResponseDto.success('Job created successfully');
+  }
+
+  async updateJob(
+    jobId: number,
+    payload: CreateJobDto,
+    user: IAuthUser,
+  ): Promise<ApiGenericResponseDto> {
+    try {
+      await this.teamPermissionService.requireOwnerOrAdmin(
+        user.teamId,
+        user.userId,
+      );
+
+      const job = await this.jobRepo.findOne({
+        where: {
+          id: jobId,
+          team: {
+            id: user.teamId,
+          },
+        },
+      });
+
+      if (!job || job.team.id !== user.teamId) {
+        throw new NotFoundException(ERROR_JOB.NOT_FOUND);
+      }
+
+      await this.jobRepo.update(jobId, payload);
+    } catch (error) {
+      this.logger.error('Error updating job', error);
+      throw new Error('Failed to update job');
+    }
+
+    return ApiGenericResponseDto.success('Job updated successfully');
   }
 }
