@@ -21,7 +21,7 @@ import {
 } from '@/common/response';
 import { generateCode } from '@/common/utils';
 import { NotificationType } from '@/modules/notifications/interfaces';
-import { NotificationSenderService } from '@/modules/notifications/services/notification-sender.service';
+import { NotificationProducer } from '@/modules/notifications/producers/notification.producer';
 import { TeamMemberRepository } from '@/modules/team/repositories/team-member.repository';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { Injectable, Logger } from '@nestjs/common';
@@ -44,8 +44,8 @@ import { TeamMapper } from '../mappers';
 import { TeamMemberMapper } from '../mappers/team-member.mapper';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
-import { TeamPermissionService } from './team-permission.service';
 import { TeamMailService } from './team-mail.service';
+import { TeamPermissionService } from './team-permission.service';
 
 @Injectable()
 export class TeamService implements ITeamService {
@@ -60,7 +60,7 @@ export class TeamService implements ITeamService {
     private readonly helperEncryptionService: HelperEncryptionService,
     private readonly teamPermissionService: TeamPermissionService,
     private readonly teamMailService: TeamMailService,
-    private readonly senderService: NotificationSenderService,
+    private readonly senderService: NotificationProducer,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -218,7 +218,7 @@ export class TeamService implements ITeamService {
         }
       });
 
-      await this.senderService.notifyUser(
+      await this.senderService.send(
         {
           title: 'Member left team',
           content: `User ${authUser.userId} has left your team ${team.name}`,

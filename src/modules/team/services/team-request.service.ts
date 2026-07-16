@@ -7,9 +7,16 @@ import {
 } from '@/common/filters/exception';
 import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, PaginatedResponseDto } from '@/common/response';
+import { NotificationType } from '@/modules/notifications/interfaces';
+import { NotificationProducer } from '@/modules/notifications/producers/notification.producer';
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { ApproveJoinRequestDto, JoinRequestDto, JoinTeamByCodeDto, RejectJoinRequestDto } from '../dtos/requests';
+import {
+  ApproveJoinRequestDto,
+  JoinRequestDto,
+  JoinTeamByCodeDto,
+  RejectJoinRequestDto,
+} from '../dtos/requests';
 import { TeamJoinRequestDto } from '../dtos/response';
 import { ITeamRequestService } from '../interfaces/team-request.interface';
 import { TeamRequestMapper } from '../mappers';
@@ -17,8 +24,6 @@ import { TeamMemberRepository } from '../repositories/team-member.repository';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamPermissionService } from './team-permission.service';
-import { NotificationSenderService } from '@/modules/notifications/services/notification-sender.service';
-import { NotificationType } from '@/modules/notifications/interfaces';
 
 @Injectable()
 export class TeamRequestService implements ITeamRequestService {
@@ -27,25 +32,26 @@ export class TeamRequestService implements ITeamRequestService {
     private readonly teamMemberRepo: TeamMemberRepository,
     private readonly teamRequestRepo: TeamRequestRepository,
     private readonly teamPermissionService: TeamPermissionService,
-    private readonly senderService: NotificationSenderService,
+    private readonly senderService: NotificationProducer,
     private readonly dataSource: DataSource,
-  ) { }
+  ) {}
 
   async joinByCode(
     payload: JoinTeamByCodeDto,
     authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
-    const team = await this.teamRepo.findOneBy({ inviteCode: payload.inviteCode });
+    const team = await this.teamRepo.findOneBy({
+      inviteCode: payload.inviteCode,
+    });
 
     if (!team) throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
 
     const teamMember = await this.teamMemberRepo.exists({
       teamId: team.id,
       userId: authUser.userId,
-    })
+    });
 
-    if (teamMember)
-      throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
+    if (teamMember) throw new BadRequestException(ERROR_USER.ALREADY_IN_TEAM);
 
     const existedRequest = await this.teamRequestRepo.exists({
       team: { id: team.id },
@@ -63,15 +69,18 @@ export class TeamRequestService implements ITeamRequestService {
       user: { id: authUser.userId },
     });
 
-    await this.senderService.notifyUser({
-      title: 'New join request',
-      content: `User ${authUser.userId} has requested to join your team ${team.name}`,
-      type: NotificationType.MEMBER_JOINED_TEAM,
-      userId: team.createdById,
-    }, {
-      teamId: team.id,
-      userId: authUser.userId,
-    });
+    await this.senderService.send(
+      {
+        title: 'New join request',
+        content: `User ${authUser.userId} has requested to join your team ${team.name}`,
+        type: NotificationType.MEMBER_JOINED_TEAM,
+        userId: team.createdById,
+      },
+      {
+        teamId: team.id,
+        userId: authUser.userId,
+      },
+    );
 
     return ApiGenericResponseDto.success();
   }
@@ -81,30 +90,33 @@ export class TeamRequestService implements ITeamRequestService {
   ): Promise<PaginatedResponseDto<TeamJoinRequestDto>> {
     const { teamId, name, limit, page } = query;
 
-    const result = await this.teamRequestRepo.findMany({ limit, page }, {
-      where: {
-        team: {
-          id: teamId
+    const result = await this.teamRequestRepo.findMany(
+      { limit, page },
+      {
+        where: {
+          team: {
+            id: teamId,
+          },
+        },
+        sort: { createdAt: SortOrder.DESC },
+        relations: { user: true },
+        filters: {
+          and: [
+            {
+              field: 'status',
+              op: 'eq',
+              value: ETeamRequestStatus.PENDING,
+            },
+            {
+              or: [
+                { field: 'user.fullName', op: 'ilike', value: name },
+                { field: 'user.email', op: 'ilike', value: name },
+              ],
+            },
+          ],
         },
       },
-      sort: { createdAt: SortOrder.DESC },
-      relations: { user: true },
-      filters: {
-        and: [
-          {
-            field: 'status',
-            op: 'eq',
-            value: ETeamRequestStatus.PENDING,
-          },
-          {
-            or: [
-              { field: 'user.fullName', op: 'ilike', value: name },
-              { field: 'user.email', op: 'ilike', value: name },
-            ],
-          },
-        ],
-      }
-    })
+    );
 
     const data = TeamRequestMapper.mapFromArray(result.data);
     return PaginatedResponseDto.success(data, result.meta);
@@ -114,7 +126,10 @@ export class TeamRequestService implements ITeamRequestService {
     payload: ApproveJoinRequestDto,
     authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
-    await this.teamPermissionService.requireOwner(payload.teamId, authUser.userId);
+    await this.teamPermissionService.requireOwner(
+      payload.teamId,
+      authUser.userId,
+    );
 
     const { teamId, id: requestId } = payload;
     const request = await this.findRequestById(requestId);
@@ -138,23 +153,29 @@ export class TeamRequestService implements ITeamRequestService {
       });
     });
 
-    await this.senderService.notifyUser({
-      title: 'Team Join Request Approved',
-      content: `Your request to join ${request.team.name} has been approved`,
-      type: NotificationType.TEAM_JOIN_REQUEST_APPROVED,
-      userId: request.user.id,
-    }, {
-      teamId: request.team.id,
-    });
+    await this.senderService.send(
+      {
+        title: 'Team Join Request Approved',
+        content: `Your request to join ${request.team.name} has been approved`,
+        type: NotificationType.TEAM_JOIN_REQUEST_APPROVED,
+        userId: request.user.id,
+      },
+      {
+        teamId: request.team.id,
+      },
+    );
 
     return ApiGenericResponseDto.success();
   }
 
   async rejectJoinRequest(
     payload: RejectJoinRequestDto,
-    authUser: IAuthUser
+    authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
-    await this.teamPermissionService.requireOwner(payload.teamId, authUser.userId);
+    await this.teamPermissionService.requireOwner(
+      payload.teamId,
+      authUser.userId,
+    );
 
     const { teamId, id: requestId } = payload;
     const request = await this.findRequestById(requestId);
@@ -171,15 +192,17 @@ export class TeamRequestService implements ITeamRequestService {
       status: ETeamRequestStatus.REJECTED,
     });
 
-    await this.senderService.notifyUser({
-      title: 'Team Join Request Rejected',
-      content: `Your request to join ${request.team.name} has been rejected`,
-      type: NotificationType.TEAM_JOIN_REQUEST_REJECTED,
-      userId: request.user.id,
-    }, {
-      teamId: request.team.id,
-    });
-
+    await this.senderService.send(
+      {
+        title: 'Team Join Request Rejected',
+        content: `Your request to join ${request.team.name} has been rejected`,
+        type: NotificationType.TEAM_JOIN_REQUEST_REJECTED,
+        userId: request.user.id,
+      },
+      {
+        teamId: request.team.id,
+      },
+    );
 
     return ApiGenericResponseDto.success();
   }
