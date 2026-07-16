@@ -3,33 +3,27 @@ import { AppModule } from './app/app.module';
 import express from 'express';
 import {
   INestApplication,
+  Logger,
   ValidationPipe,
   VersioningType,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import setupSwagger from './swagger';
-import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
   const server = express();
-  let app: INestApplication;
-
-  // // Tạo logger của Nest
-  // const logger = new Logger('Bootstrap');
+  const logger = new Logger('Bootstrap');
+  let app: INestApplication | undefined;
 
   try {
-    app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
-      bufferLogs: true,
-    });
+    app = await NestFactory.create(AppModule, new ExpressAdapter(server));
 
     const config = app.get(ConfigService);
 
-    const port = config.get<number>('app.http.port');
-    const host = config.get<string>('app.http.host');
+    const port = config.getOrThrow<number>('app.http.port');
+    const host = config.getOrThrow<string>('app.http.host');
     const version = config.get<string>('app.versioning.version');
-
-    const logger = app.get(Logger);
 
     app.setGlobalPrefix('api');
     app.enableCors(config.get('app.cors'));
@@ -53,8 +47,10 @@ async function bootstrap() {
 
     logger.log(`Server running on: ${await app.getUrl()}`);
   } catch (error) {
-    // logger.error('Server failed to start', error instanceof Error ? error.stack : String(error));
-    console.log('Server failed to start', error instanceof Error ? error.stack : String(error));
+    logger.error(
+      'Server failed to start',
+      error instanceof Error ? error.stack : String(error),
+    );
 
     if (app) {
       await app.close();

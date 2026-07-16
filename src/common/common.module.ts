@@ -4,7 +4,6 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import configs from '@/common/configs';
 import { RequestModule } from '@/common/request/request.module';
-import { LoggerModule } from '@/common/logger/logger.module';
 import { HelperModule } from './helper/helper.module';
 import { GuardModule } from './guard/guard.module';
 import { CacheModule } from './cache/cache.module';
@@ -26,7 +25,6 @@ import { BullMqModule } from './bullmq/bullmq.module';
     GuardModule,
     DatabaseModule,
     RequestModule,
-    LoggerModule,
     HelperModule,
     CacheModule,
     UploadModule,
