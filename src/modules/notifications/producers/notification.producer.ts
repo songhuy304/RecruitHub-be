@@ -26,8 +26,8 @@ export class NotificationProducer {
       },
       {
         attempts: 3,
-        removeOnComplete: 1000,
-        removeOnFail: 1000,
+        removeOnComplete: true,
+        removeOnFail: true,
       },
     );
   }
