@@ -34,15 +34,21 @@ export class JobRequestDto extends PaginationRequestDto {
   @IsOptional()
   q?: string;
 
-  @ApiPropertyOptional({ enum: EmploymentType })
-  @IsEnum(EmploymentType)
+  @ApiPropertyOptional({
+    enum: EmploymentType,
+    isArray: true,
+  })
+  @IsEnum(EmploymentType, { each: true })
   @IsOptional()
-  jobType?: EmploymentType;
+  jobType?: EmploymentType[];
 
-  @ApiPropertyOptional({ enum: JobLevel })
-  @IsEnum(JobLevel)
+  @ApiPropertyOptional({
+    enum: JobLevel,
+    isArray: true,
+  })
+  @IsEnum(JobLevel, { each: true })
   @IsOptional()
-  level?: JobLevel;
+  level?: JobLevel[];
 
   @ApiPropertyOptional({ type: Boolean })
   @IsBoolean()
@@ -70,8 +76,10 @@ export class JobRequestDto extends PaginationRequestDto {
   @Type(() => SortRequestDto)
   sort?: SortRequestDto;
 
-  @ApiPropertyOptional()
-  @IsString()
+  @ApiPropertyOptional({
+    type: [String],
+  })
+  @IsString({ each: true })
   @IsOptional()
-  location?: string;
+  location?: string[];
 }

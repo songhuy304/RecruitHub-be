@@ -50,21 +50,17 @@ export class JobService {
           team: true,
         },
         sort: {
+          isPinned: SortOrder.DESC,
           [sortBy || 'createdAt']: sortOrder || SortOrder.DESC,
         },
         filters: {
           and: [
-            { field: 'status', op: 'eq', value: status },
-            { field: 'employmentType', op: 'eq', value: jobType },
-            { field: 'level', op: 'eq', value: level },
+            { field: 'status', op: 'in', value: status },
+            { field: 'employmentType', op: 'in', value: jobType },
+            { field: 'level', op: 'in', value: level },
             { field: 'isPinned', op: 'eq', value: isPinned },
             { field: 'location', op: 'ilike', value: location },
-            {
-              or: [
-                { field: 'title', op: 'ilike', value: q },
-                { field: 'description', op: 'ilike', value: q },
-              ],
-            },
+            { field: 'title', op: 'ilike', value: q },
             {
               field: 'createdAt',
               op: 'dateRange',
