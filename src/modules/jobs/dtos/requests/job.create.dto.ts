@@ -127,12 +127,10 @@ export class CreateJobDto {
   location: string;
 
   @ApiProperty({
-    type: [String],
-    example: ['Engineering', 'Platform'],
+    example: 'Engineering',
   })
-  @IsArray()
-  @IsString({ each: true })
-  departments: string[];
+  @IsNumber()
+  department: number;
 
   @ApiPropertyOptional({
     type: [String],

@@ -14,4 +14,24 @@ export class DepartmentRepositoryImpl extends BaseRepository<DepartmentEntity> {
   ) {
     super(repo, helperQuery);
   }
+
+  async findById(id: number): Promise<DepartmentEntity | null> {
+    return this.findOneBy({ id });
+  }
+
+  async findOrCreateByCode(
+    code: string,
+    name?: string,
+  ): Promise<DepartmentEntity> {
+    let department = await this.findOneBy({ code });
+
+    if (!department) {
+      department = await this.create({
+        code,
+        name: name ?? code,
+      });
+    }
+
+    return department;
+  }
 }

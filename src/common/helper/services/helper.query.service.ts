@@ -67,6 +67,30 @@ export class HelperQueryService {
     return qb.getCount();
   }
 
+  async groupCount<T extends ObjectLiteral>(
+    repo: Repository<T>,
+    field: keyof T & string,
+    options: Pick<QueryOptions<T>, 'where' | 'filters'> = {},
+  ): Promise<
+    {
+      key: T[keyof T];
+      count: number;
+    }[]
+  > {
+    const qb = this.createBuilder(repo, options);
+
+    const result = await qb
+      .select(`${qb.alias}.${field}`, 'key')
+      .addSelect('COUNT(*)', 'count')
+      .groupBy(`${qb.alias}.${field}`)
+      .getRawMany<{ key: T[keyof T]; count: string }>();
+
+    return result.map((item) => ({
+      key: item.key,
+      count: Number(item.count),
+    }));
+  }
+
   async exists<T extends ObjectLiteral>(
     repo: Repository<T>,
     options: Pick<QueryOptions<T>, 'where' | 'filters'> = {},

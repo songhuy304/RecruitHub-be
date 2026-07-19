@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsEnum, IsNumber, IsOptional, IsString, IsArray } from 'class-validator';
+import { Expose, Transform, Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsDate,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { EmploymentType, JobLevel, JobStatus } from '@/common/entities';
 
 export class JobTeamResponseDto {
@@ -109,11 +116,9 @@ export class JobResponseDto {
   @IsString()
   location: string;
 
-  @ApiProperty({ example: ['IT', 'Engineering'], type: [String] })
   @Expose()
-  @IsArray()
-  @IsString({ each: true })
-  departments: string[];
+  @Transform(({ obj: { department } }) => department?.name)
+  department: string;
 
   @ApiProperty({ type: () => JobTeamResponseDto, required: false })
   @Expose()

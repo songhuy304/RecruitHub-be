@@ -17,7 +17,7 @@ export abstract class BaseRepository<TEntity extends Entity> {
   constructor(
     protected readonly repo: TypeOrmRepository<TEntity>,
     protected readonly helperQuery: HelperQueryService,
-  ) { }
+  ) {}
 
   get repository(): TypeOrmRepository<TEntity> {
     return this.repo;
@@ -92,5 +92,12 @@ export abstract class BaseRepository<TEntity extends Entity> {
     query?: Pick<QueryOptions<TEntity>, 'filters' | 'where'>,
   ): Promise<number> {
     return this.helperQuery.count(this.repo, query);
+  }
+
+  async groupCount<K extends keyof TEntity & string>(
+    field: K,
+    query?: Pick<QueryOptions<TEntity>, 'filters' | 'where'>,
+  ) {
+    return this.helperQuery.groupCount(this.repo, field, query);
   }
 }

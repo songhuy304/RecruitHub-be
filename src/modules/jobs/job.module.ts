@@ -6,9 +6,15 @@ import { jobRepositoryImpl } from './repositories/job.repository';
 import { JobService } from './services/job.service';
 import { HelperModule } from '@/common/helper/helper.module';
 import { TeamModule } from '@/modules/team/team.module';
+import { MetadataModule } from '../metadata/metadata.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([JobEntity]), HelperModule, TeamModule],
+  imports: [
+    TypeOrmModule.forFeature([JobEntity]),
+    HelperModule,
+    TeamModule,
+    MetadataModule,
+  ],
   controllers: [JobController],
   providers: [jobRepositoryImpl, JobService],
   exports: [JobService],

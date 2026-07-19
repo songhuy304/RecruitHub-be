@@ -18,6 +18,6 @@ import { DepartmentRepositoryImpl } from './repositories/department.repository';
     DepartmentRepositoryImpl,
     MetadataService,
   ],
-  exports: [MetadataService],
+  exports: [MetadataService, LocationRepositoryImpl, DepartmentRepositoryImpl],
 })
 export class MetadataModule {}

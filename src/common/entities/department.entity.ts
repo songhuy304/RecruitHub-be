@@ -1,11 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { JobEntity } from './job.entity';
 
 @Entity('departments')
 export class DepartmentEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   code: string;
 
   @Column()
@@ -16,4 +17,7 @@ export class DepartmentEntity {
 
   @Column({ default: true })
   isActive: boolean;
+
+  @OneToMany(() => JobEntity, (job) => job.department)
+  jobs: JobEntity[];
 }

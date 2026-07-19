@@ -2,14 +2,25 @@ import { ERROR_JOB } from '@/common/constants';
 import { SortOrder } from '@/common/enums';
 import { NotFoundException } from '@/common/filters/exception';
 import { IAuthUser } from '@/common/request/interfaces';
-import { ApiGenericResponseDto, PaginatedResponseDto } from '@/common/response';
+import {
+  ApiGenericResponseDto,
+  ApiResponseDto,
+  PaginatedResponseDto,
+} from '@/common/response';
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateJobDto } from '../dtos/requests';
-import { JobRequestDto } from '../dtos/requests/job.get.dto';
+import {
+  JobGetSummaryRequestDto,
+  JobRequestDto,
+} from '../dtos/requests/job.get.dto';
 import { JobResponseDto } from '../dtos/responses/job.response.dto';
 import { JobMapper } from '../mappers/job.mapper';
 import { jobRepositoryImpl } from '../repositories/job.repository';
 import { TeamPermissionService } from '@/modules/team/services/team-permission.service';
+import { DepartmentRepositoryImpl } from '@/modules/metadata/repositories/department.repository';
+import { JobSummaryResponseDto } from '../dtos/responses/job-summary.response.dto';
+import { QueryOptions } from '@/common/helper/interfaces/helper-query.interface';
+import { JobEntity } from '@/common/entities';
 
 @Injectable()
 export class JobService {
@@ -17,6 +28,7 @@ export class JobService {
   constructor(
     private readonly jobRepo: jobRepositoryImpl,
     private readonly teamPermissionService: TeamPermissionService,
+    private readonly departmentRepo: DepartmentRepositoryImpl,
   ) {}
 
   async getAllJobs(
@@ -48,6 +60,7 @@ export class JobService {
         },
         relations: {
           team: true,
+          department: true,
         },
         sort: {
           isPinned: SortOrder.DESC,
@@ -55,11 +68,11 @@ export class JobService {
         },
         filters: {
           and: [
-            { field: 'status', op: 'in', value: status },
+            { field: 'status', op: 'eq', value: status },
             { field: 'employmentType', op: 'in', value: jobType },
             { field: 'level', op: 'in', value: level },
             { field: 'isPinned', op: 'eq', value: isPinned },
-            { field: 'location', op: 'ilike', value: location },
+            { field: 'location', op: 'in', value: location },
             { field: 'title', op: 'ilike', value: q },
             {
               field: 'createdAt',
@@ -75,6 +88,23 @@ export class JobService {
     return PaginatedResponseDto.success(dataMap, jobs.meta);
   }
 
+  // async getJobSummary(
+  //   query: JobGetSummaryRequestDto,
+  //   user: IAuthUser,
+  // ): Promise<ApiResponseDto<JobSummaryResponseDto>> {
+  //   const { q, jobType, level, createdAt, location } = query;
+
+  //   // const totalJobs = await this.jobRepo.count({
+  //   //   where: {
+  //   //     team: {
+  //   //       id: user.teamId,
+  //   //     },
+  //   //   },
+  //   // });
+
+  //   const totalJobs = await this.jobRepo.repository.createQueryBuilder('jon');
+  // }
+
   async createJob(
     payload: CreateJobDto,
     user: IAuthUser,
@@ -85,8 +115,14 @@ export class JobService {
         user.userId,
       );
 
+      const department = await this.departmentRepo.findById(payload.department);
+      if (!department) {
+        throw new NotFoundException('Department not found');
+      }
+
       await this.jobRepo.create({
         ...payload,
+        department: department,
         team: {
           id: user.teamId,
         },
@@ -123,7 +159,15 @@ export class JobService {
         throw new NotFoundException(ERROR_JOB.NOT_FOUND);
       }
 
-      await this.jobRepo.update(jobId, payload);
+      const department = await this.departmentRepo.findById(payload.department);
+      if (!department) {
+        throw new NotFoundException('Department not found');
+      }
+
+      await this.jobRepo.update(jobId, {
+        ...payload,
+        department: department,
+      });
     } catch (error) {
       this.logger.error('Error updating job', error);
       throw new Error('Failed to update job');

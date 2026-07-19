@@ -4,7 +4,7 @@ import {
   PaginationRequestDto,
   SortRequestDto,
 } from '@/common/request/dtos';
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional, IntersectionType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
@@ -23,7 +23,7 @@ export enum JobSortBy {
   TITLE = 'title',
 }
 
-export class JobRequestDto extends PaginationRequestDto {
+class JobQueryDto {
   @ApiPropertyOptional({ enum: JobStatus })
   @IsEnum(JobStatus)
   @IsOptional()
@@ -40,6 +40,10 @@ export class JobRequestDto extends PaginationRequestDto {
   })
   @IsEnum(EmploymentType, { each: true })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value == null) return undefined;
+    return Array.isArray(value) ? value : [value];
+  })
   jobType?: EmploymentType[];
 
   @ApiPropertyOptional({
@@ -48,6 +52,10 @@ export class JobRequestDto extends PaginationRequestDto {
   })
   @IsEnum(JobLevel, { each: true })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value == null) return undefined;
+    return Array.isArray(value) ? value : [value];
+  })
   level?: JobLevel[];
 
   @ApiPropertyOptional({ type: Boolean })
@@ -81,5 +89,64 @@ export class JobRequestDto extends PaginationRequestDto {
   })
   @IsString({ each: true })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value == null) return undefined;
+    return Array.isArray(value) ? value : [value];
+  })
+  location?: string[];
+}
+
+export class JobRequestDto extends IntersectionType(
+  PaginationRequestDto,
+  JobQueryDto,
+) {}
+
+export class JobGetSummaryRequestDto {
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  q?: string;
+
+  @ApiPropertyOptional({
+    enum: EmploymentType,
+    isArray: true,
+  })
+  @IsEnum(EmploymentType, { each: true })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value == null) return undefined;
+    return Array.isArray(value) ? value : [value];
+  })
+  jobType?: EmploymentType[];
+
+  @ApiPropertyOptional({
+    enum: JobLevel,
+    isArray: true,
+  })
+  @IsEnum(JobLevel, { each: true })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value == null) return undefined;
+    return Array.isArray(value) ? value : [value];
+  })
+  level?: JobLevel[];
+
+  @ApiPropertyOptional({
+    type: DateRangeDto,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
+  createdAt?: DateRangeDto;
+
+  @ApiPropertyOptional({
+    type: [String],
+  })
+  @IsString({ each: true })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value == null) return undefined;
+    return Array.isArray(value) ? value : [value];
+  })
   location?: string[];
 }
