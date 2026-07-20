@@ -45,7 +45,6 @@ import { TeamMemberMapper } from '../mappers/team-member.mapper';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamMailService } from './team-mail.service';
-import { TeamPermissionService } from './team-permission.service';
 
 @Injectable()
 export class TeamService implements ITeamService {
@@ -58,7 +57,6 @@ export class TeamService implements ITeamService {
     private readonly teamRequestRepo: TeamRequestRepository,
     private readonly teamMemberRepo: TeamMemberRepository,
     private readonly helperEncryptionService: HelperEncryptionService,
-    private readonly teamPermissionService: TeamPermissionService,
     private readonly teamMailService: TeamMailService,
     private readonly senderService: NotificationProducer,
     private readonly dataSource: DataSource,
@@ -131,10 +129,7 @@ export class TeamService implements ITeamService {
   async updateTeam(
     payload: UpdateTeamDto,
     teamId: number,
-    authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
-    await this.teamPermissionService.requireOwner(teamId, authUser.userId);
-
     const team = await this.teamRepo.findOneBy({ id: teamId });
     if (!team) {
       throw new NotFoundException(ERROR_TEAM.NOT_FOUND);
@@ -151,10 +146,7 @@ export class TeamService implements ITeamService {
     teamId: number,
     userId: number,
     payload: UpdateTeamMemberDto,
-    authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
-    await this.teamPermissionService.requireOwner(teamId, authUser.userId);
-
     const user = await this.teamMemberRepo.findOneBy({ teamId, userId });
     if (!user) {
       throw new NotFoundException(ERROR_TEAM.NOT_IN_TEAM);

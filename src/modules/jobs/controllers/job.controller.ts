@@ -60,14 +60,14 @@ export class JobController {
 
   @Post()
   @UseGuards(TeamRolesGuard)
-  @TeamRoles(ETeamRole.OWNER)
+  @TeamRoles(ETeamRole.OWNER, ETeamRole.OWNER, ETeamRole.ADMIN)
   createJob(@Body() payload: CreateJobDto, @AuthUser() user: IAuthUser) {
     return this.jobService.createJob(payload, user);
   }
 
   @Put(':jobId')
   @UseGuards(TeamRolesGuard)
-  @TeamRoles(ETeamRole.OWNER)
+  @TeamRoles(ETeamRole.OWNER, ETeamRole.ADMIN)
   updateJob(
     @Body() payload: CreateJobDto,
     @AuthUser() user: IAuthUser,

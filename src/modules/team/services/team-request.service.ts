@@ -124,13 +124,7 @@ export class TeamRequestService implements ITeamRequestService {
 
   async approveJoinRequest(
     payload: ApproveJoinRequestDto,
-    authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
-    await this.teamPermissionService.requireOwner(
-      payload.teamId,
-      authUser.userId,
-    );
-
     const { teamId, id: requestId } = payload;
     const request = await this.findRequestById(requestId);
 
@@ -170,13 +164,7 @@ export class TeamRequestService implements ITeamRequestService {
 
   async rejectJoinRequest(
     payload: RejectJoinRequestDto,
-    authUser: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
-    await this.teamPermissionService.requireOwner(
-      payload.teamId,
-      authUser.userId,
-    );
-
     const { teamId, id: requestId } = payload;
     const request = await this.findRequestById(requestId);
 

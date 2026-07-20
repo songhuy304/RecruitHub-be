@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
@@ -35,6 +36,9 @@ import {
 } from '../dtos/response';
 import { TeamRequestService } from '../services/team-request.service';
 import { TeamService } from '../services/team.service';
+import { TeamRolesGuard } from '@/common/guard/team-role.guard';
+import { TeamRoles } from '@/common/guard/decorator/guard.role.decorator';
+import { ETeamRole } from '@/common/enums';
 
 @ApiTags('Teams')
 @ApiBearerAuth('accessToken')
@@ -79,12 +83,13 @@ export class TeamController {
     httpStatus: HttpStatus.OK,
     messageKey: 'Successfully updated team',
   })
+  @UseGuards(TeamRolesGuard)
+  @TeamRoles(ETeamRole.OWNER)
   async updateTeam(
     @Body() query: UpdateTeamDto,
     @Param('teamId', ParseIntPipe) teamId: number,
-    @AuthUser() user: IAuthUser,
   ) {
-    return this.teamService.updateTeam(query, teamId, user);
+    return this.teamService.updateTeam(query, teamId);
   }
 
   @Post('/join/:code')
@@ -105,19 +110,17 @@ export class TeamController {
   }
 
   @Post('/join-requests/approve')
-  async approveJoinRequest(
-    @Body() payload: ApproveJoinRequestDto,
-    @AuthUser() user: IAuthUser,
-  ) {
-    return this.teamRequestService.approveJoinRequest(payload, user);
+  @UseGuards(TeamRolesGuard)
+  @TeamRoles(ETeamRole.OWNER)
+  async approveJoinRequest(@Body() payload: ApproveJoinRequestDto) {
+    return this.teamRequestService.approveJoinRequest(payload);
   }
 
   @Post('/join-requests/reject')
-  async rejectJoinRequest(
-    @Body() payload: RejectJoinRequestDto,
-    @AuthUser() user: IAuthUser,
-  ) {
-    return this.teamRequestService.rejectJoinRequest(payload, user);
+  @UseGuards(TeamRolesGuard)
+  @TeamRoles(ETeamRole.OWNER)
+  async rejectJoinRequest(@Body() payload: RejectJoinRequestDto) {
+    return this.teamRequestService.rejectJoinRequest(payload);
   }
 
   @Post('/leave/:id')
@@ -183,12 +186,13 @@ export class TeamController {
   }
 
   @Patch(':teamId/members/:userId')
+  @UseGuards(TeamRolesGuard)
+  @TeamRoles(ETeamRole.OWNER)
   async updateMember(
     @Param('teamId', ParseIntPipe) teamId: number,
     @Param('userId', ParseIntPipe) userId: number,
     @Body() payload: UpdateTeamMemberDto,
-    @AuthUser() user: IAuthUser,
   ) {
-    return this.teamService.updateMemberRole(teamId, userId, payload, user);
+    return this.teamService.updateMemberRole(teamId, userId, payload);
   }
 }

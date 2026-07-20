@@ -1,34 +1,32 @@
 import { ERROR_JOB } from '@/common/constants';
+import { JobEntity } from '@/common/entities';
 import { SortOrder } from '@/common/enums';
 import { NotFoundException } from '@/common/filters/exception';
+import { QueryOptions } from '@/common/helper/interfaces/helper-query.interface';
 import { IAuthUser } from '@/common/request/interfaces';
 import {
   ApiGenericResponseDto,
   ApiResponseDto,
   PaginatedResponseDto,
 } from '@/common/response';
+import { DepartmentRepositoryImpl } from '@/modules/metadata/repositories/department.repository';
 import { Injectable, Logger } from '@nestjs/common';
 import { CreateJobDto } from '../dtos/requests';
 import {
   JobGetSummaryRequestDto,
   JobRequestDto,
 } from '../dtos/requests/job.get.dto';
+import { JobSummaryResponseDto } from '../dtos/responses/job-summary.response.dto';
 import { JobResponseDto } from '../dtos/responses/job.response.dto';
+import { JobSummaryMapper } from '../mappers';
 import { JobMapper } from '../mappers/job.mapper';
 import { jobRepositoryImpl } from '../repositories/job.repository';
-import { TeamPermissionService } from '@/modules/team/services/team-permission.service';
-import { DepartmentRepositoryImpl } from '@/modules/metadata/repositories/department.repository';
-import { JobSummaryResponseDto } from '../dtos/responses/job-summary.response.dto';
-import { QueryOptions } from '@/common/helper/interfaces/helper-query.interface';
-import { JobEntity } from '@/common/entities';
-import { JobSummaryMapper } from '../mappers';
 
 @Injectable()
 export class JobService {
   private readonly logger = new Logger(JobService.name);
   constructor(
     private readonly jobRepo: jobRepositoryImpl,
-    private readonly teamPermissionService: TeamPermissionService,
     private readonly departmentRepo: DepartmentRepositoryImpl,
   ) {}
 
