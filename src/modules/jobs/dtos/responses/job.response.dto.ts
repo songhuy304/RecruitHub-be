@@ -10,7 +10,12 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { EmploymentType, JobLevel, JobStatus } from '@/common/entities';
+import {
+  EmploymentType,
+  JobLevel,
+  JobStatus,
+  WorkLocationType,
+} from '@/common/entities';
 import { ETeamRole } from '@/common/enums';
 
 export class JobTeamMemberResponseDto {
@@ -156,9 +161,18 @@ export class JobResponseDto {
   @IsString()
   location: string;
 
+  @ApiProperty({ example: 'Engineering' })
   @Expose()
-  @Transform(({ obj: { department } }) => department?.name)
+  @IsString()
   department: string;
+
+  @Expose()
+  skills: string[];
+
+  @ApiProperty({ enum: WorkLocationType })
+  @Expose()
+  @IsEnum(WorkLocationType)
+  workLocationType: WorkLocationType;
 
   @ApiProperty({ type: () => JobTeamResponseDto, required: false })
   @Expose()
