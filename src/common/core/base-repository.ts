@@ -97,7 +97,12 @@ export abstract class BaseRepository<TEntity extends Entity> {
   async groupCount<K extends keyof TEntity & string>(
     field: K,
     query?: Pick<QueryOptions<TEntity>, 'filters' | 'where'>,
-  ) {
+  ): Promise<
+    {
+      key: TEntity[K];
+      count: number;
+    }[]
+  > {
     return this.helperQuery.groupCount(this.repo, field, query);
   }
 }

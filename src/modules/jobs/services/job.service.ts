@@ -21,6 +21,7 @@ import { DepartmentRepositoryImpl } from '@/modules/metadata/repositories/depart
 import { JobSummaryResponseDto } from '../dtos/responses/job-summary.response.dto';
 import { QueryOptions } from '@/common/helper/interfaces/helper-query.interface';
 import { JobEntity } from '@/common/entities';
+import { JobSummaryMapper } from '../mappers';
 
 @Injectable()
 export class JobService {
@@ -88,33 +89,61 @@ export class JobService {
     return PaginatedResponseDto.success(dataMap, jobs.meta);
   }
 
-  // async getJobSummary(
-  //   query: JobGetSummaryRequestDto,
-  //   user: IAuthUser,
-  // ): Promise<ApiResponseDto<JobSummaryResponseDto>> {
-  //   const { q, jobType, level, createdAt, location } = query;
+  async getJobSummary(
+    query: JobGetSummaryRequestDto,
+    user: IAuthUser,
+  ): Promise<ApiResponseDto<JobSummaryResponseDto>> {
+    const { q, jobType, level, createdAt, location } = query;
 
-  //   // const totalJobs = await this.jobRepo.count({
-  //   //   where: {
-  //   //     team: {
-  //   //       id: user.teamId,
-  //   //     },
-  //   //   },
-  //   // });
+    const queryOptions: Pick<QueryOptions<JobEntity>, 'where' | 'filters'> = {
+      where: {
+        team: {
+          id: user.teamId,
+        },
+      },
+      filters: {
+        and: [
+          { field: 'employmentType', op: 'in', value: jobType },
+          { field: 'level', op: 'in', value: level },
+          { field: 'location', op: 'in', value: location },
+          { field: 'title', op: 'ilike', value: q },
+          {
+            field: 'createdAt',
+            op: 'dateRange',
+            value: createdAt ? [createdAt.from, createdAt.to] : undefined,
+          },
+        ],
+      },
+    };
 
-  //   const totalJobs = await this.jobRepo.repository.createQueryBuilder('jon');
-  // }
+    const [totalJobs, jobsByStatus] = await Promise.all([
+      this.jobRepo.count(queryOptions),
+      this.jobRepo.groupCount('status', queryOptions),
+    ]);
+
+    const newValue = JobSummaryMapper.toJobSummary(totalJobs, jobsByStatus);
+
+    return ApiResponseDto.success(newValue);
+
+    // const totalJobs = await this.jobRepo.repository
+    //   .createQueryBuilder('job')
+    //   .select('COUNT(job.id)', 'count')
+    //   .where('job.teamId = :teamId', { teamId: user.teamId })
+    //   .getRawOne();
+
+    // const result = await this.jobRepo.repository
+    //   .createQueryBuilder('job')
+    //   .select('job.status', 'status')
+    //   .addSelect('COUNT(job.id)', 'count')
+    //   .groupBy('job.status')
+    //   .getRawMany();
+  }
 
   async createJob(
     payload: CreateJobDto,
     user: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
     try {
-      await this.teamPermissionService.requireOwnerOrAdmin(
-        user.teamId,
-        user.userId,
-      );
-
       const department = await this.departmentRepo.findById(payload.department);
       if (!department) {
         throw new NotFoundException('Department not found');
@@ -141,11 +170,6 @@ export class JobService {
     user: IAuthUser,
   ): Promise<ApiGenericResponseDto> {
     try {
-      await this.teamPermissionService.requireOwnerOrAdmin(
-        user.teamId,
-        user.userId,
-      );
-
       const job = await this.jobRepo.findOne({
         where: {
           id: jobId,

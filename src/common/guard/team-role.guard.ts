@@ -1,20 +1,17 @@
 import { ETeamRole } from '@/common/enums';
+import { TeamPermissionService } from '@/modules/team/services/team-permission.service';
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ERROR_USER } from '../constants';
 import { ForbiddenException } from '../filters/exception';
 import { IRequest } from '../request/interfaces';
 import { TEAM_ROLES_DECORATOR_KEY } from './constants/guard.constant';
-import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
-import { DataSource } from 'typeorm';
-import { TeamMemberEntity } from '../entities/team-member.entity';
 
 @Injectable()
 export class TeamRolesGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private readonly userRepo: UserRepositoryImpl,
-    private readonly dataSource: DataSource,
+    private readonly teamPermissionService: TeamPermissionService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -34,24 +31,21 @@ export class TeamRolesGuard implements CanActivate {
       throw new ForbiddenException(ERROR_USER.FORBIDDEN);
     }
 
-    const teamIdStr = request.params.teamId;
+    const teamIdStr = request.user.teamId;
     if (!teamIdStr) {
       throw new ForbiddenException(ERROR_USER.FORBIDDEN);
     }
 
-    const teamId = parseInt(teamIdStr, 10);
-    if (isNaN(teamId)) {
+    if (isNaN(teamIdStr)) {
       throw new ForbiddenException(ERROR_USER.FORBIDDEN);
     }
 
-    const member = await this.dataSource.getRepository(TeamMemberEntity).findOne({
-      where: { userId: user.userId, teamId },
-    });
+    await this.teamPermissionService.requireRole(
+      Number(teamIdStr),
+      user.userId,
+      requiredRoles,
+    );
 
-    if (!member) {
-      throw new ForbiddenException(ERROR_USER.FORBIDDEN);
-    }
-
-    return requiredRoles.some((role) => member.role === role);
+    return true;
   }
 }
