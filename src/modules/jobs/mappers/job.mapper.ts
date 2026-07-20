@@ -7,7 +7,7 @@ export class JobMapper {
       JobResponseDto,
       {
         ...job,
-        department: job.department?.id,
+        department: job.department,
         team: job.team && {
           ...job.team,
           members:

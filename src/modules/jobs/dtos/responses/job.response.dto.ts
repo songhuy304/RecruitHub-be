@@ -5,6 +5,7 @@ import {
   WorkLocationType,
 } from '@/common/entities';
 import { ETeamRole } from '@/common/enums';
+import { DepartmentResponseDto } from '@/modules/metadata/dtos';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import {
@@ -161,10 +162,10 @@ export class JobResponseDto {
   @IsString()
   location: string;
 
-  @ApiProperty({ example: 'Engineering' })
+  @ApiProperty({ type: DepartmentResponseDto })
   @Expose()
-  @IsString()
-  department: string;
+  @Type(() => DepartmentResponseDto)
+  department: DepartmentResponseDto;
 
   @ApiProperty({ type: [String], example: ['JavaScript', 'TypeScript'] })
   @Expose()
@@ -174,6 +175,11 @@ export class JobResponseDto {
   @Expose()
   @IsEnum(WorkLocationType)
   workLocationType: WorkLocationType;
+
+  @ApiProperty({ type: String })
+  @Expose()
+  @IsString()
+  currency: string;
 
   @ApiProperty({ type: String, example: '123 Main St, City, State 12345' })
   @Expose()
