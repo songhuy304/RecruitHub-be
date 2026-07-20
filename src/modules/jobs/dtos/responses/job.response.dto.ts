@@ -1,14 +1,46 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Transform, Type } from 'class-transformer';
 import {
+  IsArray,
   IsBoolean,
   IsDate,
   IsEnum,
   IsNumber,
   IsOptional,
   IsString,
+  ValidateNested,
 } from 'class-validator';
 import { EmploymentType, JobLevel, JobStatus } from '@/common/entities';
+import { ETeamRole } from '@/common/enums';
+
+export class JobTeamMemberResponseDto {
+  @ApiProperty({ example: 1 })
+  @Expose()
+  @IsNumber()
+  id: number;
+
+  @ApiProperty({ example: 'john@gmail.com' })
+  @Expose()
+  @IsString()
+  email: string;
+
+  @ApiProperty({ example: 'John Doe' })
+  @Expose()
+  @IsString()
+  fullName: string;
+
+  @ApiProperty({ example: 'https://avatar.com/a.png', required: false })
+  @Expose()
+  @IsString()
+  @IsOptional()
+  avatar?: string;
+
+  @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER, required: false })
+  @Expose()
+  @IsEnum(ETeamRole)
+  @IsOptional()
+  teamRole?: ETeamRole;
+}
 
 export class JobTeamResponseDto {
   @ApiProperty({ example: 1 })
@@ -31,6 +63,14 @@ export class JobTeamResponseDto {
   @IsString()
   @IsOptional()
   logoUrl?: string;
+
+  @ApiProperty({ type: () => [JobTeamMemberResponseDto], required: false })
+  @Expose()
+  @Type(() => JobTeamMemberResponseDto)
+  @IsArray()
+  @ValidateNested({ each: true })
+  @IsOptional()
+  members?: JobTeamMemberResponseDto[];
 }
 
 export class JobResponseDto {

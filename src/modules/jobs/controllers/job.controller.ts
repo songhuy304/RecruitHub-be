@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -60,7 +61,7 @@ export class JobController {
 
   @Post()
   @UseGuards(TeamRolesGuard)
-  @TeamRoles(ETeamRole.OWNER, ETeamRole.OWNER, ETeamRole.ADMIN)
+  @TeamRoles(ETeamRole.OWNER, ETeamRole.ADMIN)
   createJob(@Body() payload: CreateJobDto, @AuthUser() user: IAuthUser) {
     return this.jobService.createJob(payload, user);
   }
@@ -74,5 +75,23 @@ export class JobController {
     @Param('jobId', ParseIntPipe) jobId: number,
   ) {
     return this.jobService.updateJob(jobId, payload, user);
+  }
+
+  @Delete(':jobId')
+  @UseGuards(TeamRolesGuard)
+  @TeamRoles(ETeamRole.OWNER)
+  deleteJob(@Param('jobId', ParseIntPipe) jobId: number) {
+    return this.jobService.deleteJob(jobId);
+  }
+
+  @Get(':jobId')
+  @ApiEndpoint({
+    summary: 'Get job by id',
+    serialization: JobResponseDto,
+    httpStatus: HttpStatus.OK,
+    messageKey: '',
+  })
+  getJobById(@Param('jobId', ParseIntPipe) jobId: number) {
+    return this.jobService.getJobById(jobId);
   }
 }

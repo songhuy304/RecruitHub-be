@@ -58,7 +58,11 @@ export class JobService {
           },
         },
         relations: {
-          team: true,
+          team: {
+            members: {
+              user: true,
+            },
+          },
           department: true,
         },
         sort: {
@@ -196,5 +200,39 @@ export class JobService {
     }
 
     return ApiGenericResponseDto.success('Job updated successfully');
+  }
+
+  async deleteJob(jobId: number): Promise<ApiGenericResponseDto> {
+    try {
+      const job = await this.jobRepo.findOneBy({ id: jobId });
+      if (!job) {
+        throw new NotFoundException(ERROR_JOB.NOT_FOUND);
+      }
+      await this.jobRepo.remove(jobId);
+    } catch (error) {
+      this.logger.error('Error deleting job', error);
+      throw new Error('Failed to delete job');
+    }
+    return ApiGenericResponseDto.success('Job deleted successfully');
+  }
+
+  async getJobById(jobId: number): Promise<ApiResponseDto<JobResponseDto>> {
+    const job = await this.jobRepo.findOne({
+      where: { id: jobId },
+      relations: {
+        team: {
+          members: {
+            user: true,
+          },
+        },
+        department: true,
+      },
+    });
+    if (!job) {
+      throw new NotFoundException(ERROR_JOB.NOT_FOUND);
+    }
+
+    const jobResponse = JobMapper.toResponse(job);
+    return ApiResponseDto.success(jobResponse);
   }
 }
