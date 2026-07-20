@@ -11,7 +11,7 @@ import {
 } from '@/common/response';
 import { DepartmentRepositoryImpl } from '@/modules/metadata/repositories/department.repository';
 import { Injectable, Logger } from '@nestjs/common';
-import { CreateJobDto } from '../dtos/requests';
+import { CreateJobDto, UpdateJobPinnedStatusDto } from '../dtos/requests';
 import {
   JobGetSummaryRequestDto,
   JobRequestDto,
@@ -181,7 +181,7 @@ export class JobService {
         },
       });
 
-      if (!job || job.team.id !== user.teamId) {
+      if (!job) {
         throw new NotFoundException(ERROR_JOB.NOT_FOUND);
       }
 
@@ -200,6 +200,30 @@ export class JobService {
     }
 
     return ApiGenericResponseDto.success('Job updated successfully');
+  }
+
+  async pinnedJob(
+    jobId: number,
+    body: UpdateJobPinnedStatusDto,
+  ): Promise<ApiGenericResponseDto> {
+    try {
+      const job = await this.jobRepo.findOne({
+        where: {
+          id: jobId,
+        },
+      });
+      if (!job) {
+        throw new NotFoundException(ERROR_JOB.NOT_FOUND);
+      }
+      await this.jobRepo.update(jobId, {
+        isPinned: body.pinned,
+      });
+    } catch (error) {
+      this.logger.error('Error pinning job', error);
+      throw new Error('Failed to pin job');
+    }
+
+    return ApiGenericResponseDto.success('Job pinned successfully');
   }
 
   async deleteJob(jobId: number): Promise<ApiGenericResponseDto> {

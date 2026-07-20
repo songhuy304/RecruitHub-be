@@ -1,5 +1,12 @@
+import {
+  EmploymentType,
+  JobLevel,
+  JobStatus,
+  WorkLocationType,
+} from '@/common/entities';
+import { ETeamRole } from '@/common/enums';
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Transform, Type } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -10,13 +17,6 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import {
-  EmploymentType,
-  JobLevel,
-  JobStatus,
-  WorkLocationType,
-} from '@/common/entities';
-import { ETeamRole } from '@/common/enums';
 
 export class JobTeamMemberResponseDto {
   @ApiProperty({ example: 1 })
@@ -166,6 +166,7 @@ export class JobResponseDto {
   @IsString()
   department: string;
 
+  @ApiProperty({ type: [String], example: ['JavaScript', 'TypeScript'] })
   @Expose()
   skills: string[];
 
@@ -173,6 +174,11 @@ export class JobResponseDto {
   @Expose()
   @IsEnum(WorkLocationType)
   workLocationType: WorkLocationType;
+
+  @ApiProperty({ type: String, example: '123 Main St, City, State 12345' })
+  @Expose()
+  @IsString()
+  officeAddress: string;
 
   @ApiProperty({ type: () => JobTeamResponseDto, required: false })
   @Expose()

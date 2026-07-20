@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Put,
   Query,
@@ -17,6 +18,7 @@ import {
   CreateJobDto,
   JobGetSummaryRequestDto,
   JobRequestDto,
+  UpdateJobPinnedStatusDto,
 } from '../dtos/requests';
 import { IAuthUser } from '@/common/request/interfaces';
 import { AuthUser } from '@/common/guard/decorator';
@@ -75,6 +77,14 @@ export class JobController {
     @Param('jobId', ParseIntPipe) jobId: number,
   ) {
     return this.jobService.updateJob(jobId, payload, user);
+  }
+
+  @Patch(':jobId/pinned')
+  pinnedJob(
+    @Param('jobId', ParseIntPipe) jobId: number,
+    @Body() body: UpdateJobPinnedStatusDto,
+  ) {
+    return this.jobService.pinnedJob(jobId, body);
   }
 
   @Delete(':jobId')
