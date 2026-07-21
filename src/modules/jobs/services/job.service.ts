@@ -44,6 +44,7 @@ export class JobService {
       isPinned,
       createdAt,
       location,
+      department,
       sort,
     } = query;
 
@@ -76,6 +77,7 @@ export class JobService {
             { field: 'level', op: 'in', value: level },
             { field: 'isPinned', op: 'eq', value: isPinned },
             { field: 'location', op: 'in', value: location },
+            { field: 'departmentId', op: 'in', value: department },
             { field: 'title', op: 'ilike', value: q },
             {
               field: 'createdAt',

@@ -9,6 +9,7 @@ import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
@@ -94,6 +95,18 @@ class JobQueryDto {
     return Array.isArray(value) ? value : [value];
   })
   location?: string[];
+
+  @ApiPropertyOptional({
+    type: [Number],
+  })
+  @IsNumber({}, { each: true })
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value == null) return undefined;
+    const values = Array.isArray(value) ? value : [value];
+    return values.map((item) => Number(item));
+  })
+  department?: number[];
 }
 
 export class JobRequestDto extends IntersectionType(
