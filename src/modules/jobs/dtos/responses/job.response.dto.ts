@@ -155,6 +155,11 @@ export class JobResponseDto {
   @ApiProperty({ example: false })
   @Expose()
   @IsBoolean()
+  isNegotiable?: boolean;
+
+  @ApiProperty({ example: false })
+  @Expose()
+  @IsBoolean()
   isPinned: boolean;
 
   @ApiProperty({ example: 'Ho Chi Minh' })
