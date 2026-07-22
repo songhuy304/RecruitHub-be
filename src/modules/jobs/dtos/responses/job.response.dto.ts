@@ -19,7 +19,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 
-export class JobTeamMemberResponseDto {
+export class UserSummaryResponseDto {
   @ApiProperty({ example: 1 })
   @Expose()
   @IsNumber()
@@ -70,13 +70,13 @@ export class JobTeamResponseDto {
   @IsOptional()
   logoUrl?: string;
 
-  @ApiProperty({ type: () => [JobTeamMemberResponseDto], required: false })
+  @ApiProperty({ type: () => [UserSummaryResponseDto], required: false })
   @Expose()
-  @Type(() => JobTeamMemberResponseDto)
+  @Type(() => UserSummaryResponseDto)
   @IsArray()
   @ValidateNested({ each: true })
   @IsOptional()
-  members?: JobTeamMemberResponseDto[];
+  members?: UserSummaryResponseDto[];
 }
 
 export class JobResponseDto {
@@ -206,4 +206,10 @@ export class JobResponseDto {
   @Expose()
   @IsDate()
   updatedAt: Date;
+
+  @ApiProperty({ type: () => UserSummaryResponseDto, required: false })
+  @Expose()
+  @Type(() => UserSummaryResponseDto)
+  @IsOptional()
+  assignee?: UserSummaryResponseDto;
 }

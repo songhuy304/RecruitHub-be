@@ -10,6 +10,7 @@ import {
   IsBoolean,
   IsDateString,
   IsEnum,
+  IsInt,
   IsNumber,
   IsOptional,
   IsString,
@@ -146,4 +147,12 @@ export class CreateJobDto {
   })
   @IsEnum(WorkLocationType)
   workLocationType: WorkLocationType;
+
+  @ApiProperty({
+    example: 12,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  assigneeId?: number;
 }

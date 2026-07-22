@@ -1,3 +1,9 @@
+import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
+import { ETeamRole } from '@/common/enums';
+import { AuthUser } from '@/common/guard/decorator';
+import { TeamRoles } from '@/common/guard/decorator/guard.role.decorator';
+import { TeamRolesGuard } from '@/common/guard/team-role.guard';
+import { IAuthUser } from '@/common/request/interfaces';
 import {
   Body,
   Controller,
@@ -8,26 +14,19 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JobService } from '../services/job.service';
 import {
   CreateJobDto,
   JobGetSummaryRequestDto,
   JobRequestDto,
   UpdateJobPinnedStatusDto,
 } from '../dtos/requests';
-import { IAuthUser } from '@/common/request/interfaces';
-import { AuthUser } from '@/common/guard/decorator';
-import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
-import { JobResponseDto } from '../dtos/responses/job.response.dto';
 import { JobSummaryResponseDto } from '../dtos/responses/job-summary.response.dto';
-import { TeamRoles } from '@/common/guard/decorator/guard.role.decorator';
-import { TeamRolesGuard } from '@/common/guard/team-role.guard';
-import { ETeamRole } from '@/common/enums';
+import { JobResponseDto } from '../dtos/responses/job.response.dto';
+import { JobService } from '../services/job.service';
 
 @ApiTags('Jobs')
 @ApiBearerAuth('accessToken')
@@ -68,7 +67,7 @@ export class JobController {
     return this.jobService.createJob(payload, user);
   }
 
-  @Put(':jobId')
+  @Patch(':jobId')
   @UseGuards(TeamRolesGuard)
   @TeamRoles(ETeamRole.OWNER, ETeamRole.ADMIN)
   updateJob(
