@@ -13,13 +13,15 @@ import { TeamMemberRepository } from './repositories/team-member.repository';
 import { TeamPermissionService } from './services/team-permission.service';
 import { NotificationModule } from '../notifications/notification.module';
 import { TeamMailService } from './services/team-mail.service';
+import { CacheModule } from '@/common/cache/cache.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([TeamEntity, TeamRequestEntity, TeamMemberEntity]),
     HelperModule,
     UserModule,
-    NotificationModule
+    NotificationModule,
+    CacheModule,
   ],
   controllers: [TeamController],
   providers: [
@@ -29,8 +31,13 @@ import { TeamMailService } from './services/team-mail.service';
     TeamService,
     TeamRequestService,
     TeamPermissionService,
-    TeamMailService
+    TeamMailService,
   ],
-  exports: [TeamRepositoryImpl, TeamMemberRepository, TeamService, TeamPermissionService],
+  exports: [
+    TeamRepositoryImpl,
+    TeamMemberRepository,
+    TeamService,
+    TeamPermissionService,
+  ],
 })
-export class TeamModule { }
+export class TeamModule {}

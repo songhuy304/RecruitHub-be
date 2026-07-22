@@ -45,6 +45,8 @@ import { TeamMemberMapper } from '../mappers/team-member.mapper';
 import { TeamRequestRepository } from '../repositories/team-request.repository';
 import { TeamRepositoryImpl } from '../repositories/team.repository';
 import { TeamMailService } from './team-mail.service';
+import { CacheService } from '@/common/cache/services/cache.service';
+import { cacheKeyRole } from '../utils';
 
 @Injectable()
 export class TeamService implements ITeamService {
@@ -60,6 +62,7 @@ export class TeamService implements ITeamService {
     private readonly teamMailService: TeamMailService,
     private readonly senderService: NotificationProducer,
     private readonly dataSource: DataSource,
+    private readonly cacheService: CacheService,
   ) {}
 
   async getTeams(
@@ -155,6 +158,8 @@ export class TeamService implements ITeamService {
     await this.teamMemberRepo.update(user.id, {
       role: payload.role,
     });
+
+    await this.cacheService.del(cacheKeyRole(teamId, userId));
 
     return ApiGenericResponseDto.success();
   }
