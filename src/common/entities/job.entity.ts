@@ -152,11 +152,8 @@ export class JobEntity extends BaseEntity {
   isUrgent: boolean;
 
   @ManyToOne(() => UserEntity)
-  @JoinColumn({ name: 'createdById' })
+  @JoinColumn({ name: 'createdBy' })
   createdBy: UserEntity;
-
-  @Column()
-  createdById: number;
 
   @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'assigneeId' })

@@ -59,11 +59,7 @@ export class JobService {
           },
         },
         relations: {
-          team: {
-            members: {
-              user: true,
-            },
-          },
+          assignee: true,
           department: true,
         },
         sort: {
@@ -246,11 +242,7 @@ export class JobService {
     const job = await this.jobRepo.findOne({
       where: { id: jobId },
       relations: {
-        team: {
-          members: {
-            user: true,
-          },
-        },
+        assignee: true,
         department: true,
       },
     });

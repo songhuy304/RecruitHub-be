@@ -2,35 +2,15 @@ import { plainToInstance } from 'class-transformer';
 import { JobEntity } from '@/common/entities/job.entity';
 import {
   JobResponseDto,
-  JobTeamResponseDto,
   UserSummaryResponseDto,
 } from '../dtos/responses/job.response.dto';
-import { TeamEntity, TeamMemberEntity, UserEntity } from '@/common/entities';
-import { ETeamRole } from '@/common/enums';
+import { UserEntity } from '@/common/entities';
 
 export class JobMapper {
-  private static toTeamMember(
-    user: UserEntity,
-    teamRole?: ETeamRole,
-  ): UserSummaryResponseDto {
-    return plainToInstance(
-      UserSummaryResponseDto,
-      { ...user, teamRole },
-      { excludeExtraneousValues: true },
-    );
-  }
-
-  private static toTeam(team: TeamEntity): JobTeamResponseDto {
-    const members =
-      team.members?.map((member: TeamMemberEntity) =>
-        this.toTeamMember(member.user, member.role),
-      ) ?? [];
-
-    return plainToInstance(
-      JobTeamResponseDto,
-      { ...team, members },
-      { excludeExtraneousValues: true },
-    );
+  private static toUserSummary(user: UserEntity): UserSummaryResponseDto {
+    return plainToInstance(UserSummaryResponseDto, user, {
+      excludeExtraneousValues: true,
+    });
   }
 
   static toResponse(job: JobEntity): JobResponseDto {
@@ -39,8 +19,7 @@ export class JobMapper {
       {
         ...job,
         department: job.department, // giữ lại nếu department là getter/relation không được spread tự động
-        team: job.team ? this.toTeam(job.team) : undefined,
-        assignee: job.assignee ? this.toTeamMember(job.assignee) : undefined,
+        assignee: job.assignee ? this.toUserSummary(job.assignee) : undefined,
       },
       { excludeExtraneousValues: true },
     );

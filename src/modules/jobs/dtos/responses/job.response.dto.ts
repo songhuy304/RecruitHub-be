@@ -9,14 +9,12 @@ import { DepartmentResponseDto } from '@/modules/metadata/dtos';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
 import {
-  IsArray,
   IsBoolean,
   IsDate,
   IsEnum,
   IsNumber,
   IsOptional,
   IsString,
-  ValidateNested,
 } from 'class-validator';
 
 export class UserSummaryResponseDto {
@@ -46,37 +44,6 @@ export class UserSummaryResponseDto {
   @IsEnum(ETeamRole)
   @IsOptional()
   teamRole?: ETeamRole;
-}
-
-export class JobTeamResponseDto {
-  @ApiProperty({ example: 1 })
-  @Expose()
-  @IsNumber()
-  id: number;
-
-  @ApiProperty({ example: 'Tech Company' })
-  @Expose()
-  @IsString()
-  name: string;
-
-  @ApiProperty({ example: 'tech-company' })
-  @Expose()
-  @IsString()
-  slug: string;
-
-  @ApiProperty({ example: 'https://logo.url/logo.png', required: false })
-  @Expose()
-  @IsString()
-  @IsOptional()
-  logoUrl?: string;
-
-  @ApiProperty({ type: () => [UserSummaryResponseDto], required: false })
-  @Expose()
-  @Type(() => UserSummaryResponseDto)
-  @IsArray()
-  @ValidateNested({ each: true })
-  @IsOptional()
-  members?: UserSummaryResponseDto[];
 }
 
 export class JobResponseDto {
@@ -190,12 +157,6 @@ export class JobResponseDto {
   @Expose()
   @IsString()
   officeAddress: string;
-
-  @ApiProperty({ type: () => JobTeamResponseDto, required: false })
-  @Expose()
-  @Type(() => JobTeamResponseDto)
-  @IsOptional()
-  team?: JobTeamResponseDto;
 
   @ApiProperty({ example: '2026-07-12T16:40:43Z' })
   @Expose()
