@@ -167,10 +167,7 @@ export class AuthService implements IAuthService {
       throw new ForbiddenException(ERROR_USER.FORBIDDEN);
     }
 
-    const isMatch = await this.helperEncryptionService.match(
-      user.refreshToken,
-      payload.refreshToken,
-    );
+    const isMatch = user.refreshToken === payload.refreshToken;
 
     if (!isMatch) {
       throw new UnauthorizedException(ERROR_USER.INVALID_CREDENTIALS);
