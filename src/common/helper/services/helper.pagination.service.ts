@@ -10,8 +10,7 @@ export class HelperPaginationService {
   private readonly DEFAULT_LIMIT = 10;
   private readonly MAX_LIMIT = 100;
 
-  constructor() {
-  }
+  constructor() {}
 
   async paginateQueryBuilder<T>(
     qb: SelectQueryBuilder<T>,

@@ -8,6 +8,6 @@ export default new DataSource({
   url: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
   entities: ['src/**/*.entity.ts'],
-  migrations: [`${__dirname}/../../migrations/*{.ts,.js}`],
+  migrations: [`${__dirname}/migrations/*{.ts,.js}`],
   logging: true,
 });

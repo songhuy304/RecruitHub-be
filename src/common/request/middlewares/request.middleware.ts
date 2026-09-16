@@ -1,7 +1,7 @@
+import { APP_ENVIRONMENT } from '@/common/configs/app.config';
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request, Response, NextFunction } from 'express';
-import { APP_ENVIRONMENT } from '@/common/enums';
 
 @Injectable()
 export class RequestMiddleware implements NestMiddleware {

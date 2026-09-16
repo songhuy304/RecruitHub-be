@@ -8,7 +8,7 @@ import {
 import { HelperEncryptionService } from '@/common/helper/services/helper.encryption.service';
 import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
-import { UserEntity } from '@/common/entities/user.entity';
+import { UserEntity } from '@/common/database/entities/user.entity';
 import { Injectable, Logger } from '@nestjs/common';
 import {
   ForgotPasswordDto,
@@ -27,15 +27,9 @@ import { IAuthService } from '../interfaces/auth.service.interface';
 import { AuthMailService } from './auth.mail.service';
 import { UserRepositoryImpl } from '@/modules/users/repositories/user.repository';
 import { ConfigService } from '@nestjs/config';
-import {
-  EAuthProvider,
-  ETeamRole,
-  ETeamType,
-  ETOKEN_TYPE,
-} from '@/common/enums';
 import { generateCode, getRandomItem } from '@/common/utils';
 import { TokenService } from '@/modules/token/services/token.service';
-import { TeamRepositoryImpl } from '@/modules/team/repositories/team.repository';
+import { EAuthProvider, ETOKEN_TYPE } from '../enums';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -48,7 +42,6 @@ export class AuthService implements IAuthService {
     private readonly authMailService: AuthMailService,
     private readonly configService: ConfigService,
     private readonly tokenService: TokenService,
-    private readonly teamRepo: TeamRepositoryImpl,
   ) {
     this.frontendUrl = this.configService.getOrThrow('app.frontend');
   }
@@ -60,7 +53,6 @@ export class AuthService implements IAuthService {
     const tokens = await this.helperEncryptionService.createJwtTokens({
       role: user.role,
       userId: user.id,
-      teamId: user.currentTeamId,
     });
 
     await this.userRepository.upsertUserRefreshToken(
@@ -81,27 +73,10 @@ export class AuthService implements IAuthService {
         await this.helperEncryptionService.createHash(password);
 
       const avatar = getRandomItem(AVATAR_FALLBACK);
-      const newUser = await this.userRepository.create({
+      await this.userRepository.create({
         ...payload,
         password: hashPassword,
         avatar,
-      });
-
-      const team = await this.teamRepo.create({
-        name: `Personal Account`,
-        slug: 'personal-account',
-        createdById: newUser.id,
-        type: ETeamType.PERSONAL,
-        members: [
-          {
-            user: newUser,
-            role: ETeamRole.OWNER,
-          },
-        ],
-      });
-
-      await this.userRepository.update(newUser.id, {
-        currentTeamId: team.id,
       });
 
       return ApiGenericResponseDto.success('register success');
@@ -176,7 +151,6 @@ export class AuthService implements IAuthService {
     const tokenPayload: IAuthUser = {
       userId: authUser.userId,
       role: authUser.role,
-      teamId: authUser.teamId,
     };
 
     const tokens =
@@ -207,7 +181,6 @@ export class AuthService implements IAuthService {
       const tokens = await this.helperEncryptionService.createJwtTokens({
         userId: user.id,
         role: user.role,
-        teamId: user.currentTeamId,
       });
 
       await this.userRepository.upsertUserRefreshToken(
@@ -244,29 +217,13 @@ export class AuthService implements IAuthService {
 
   private async createOAuthUser(payload: UserOauthDto): Promise<UserEntity> {
     try {
-      const user = await this.userRepository.create({
+      return await this.userRepository.create({
         email: payload.email,
         fullName: payload.fullName,
         avatar: payload.avatar || null,
         provider: payload.provider,
         isVerified: true,
       });
-
-      const team = await this.teamRepo.create({
-        name: 'Personal Account',
-        slug: 'personal-account',
-        createdById: user.id,
-        type: ETeamType.PERSONAL,
-        members: [
-          {
-            user,
-            role: ETeamRole.OWNER,
-          },
-        ],
-      });
-
-      await this.userRepository.updateCurrentTeam(user.id, team.id);
-      return user;
     } catch (error) {
       this.logger.error('Error creating OAuth user', error);
 

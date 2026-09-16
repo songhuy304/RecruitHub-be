@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
+import { Expose } from 'class-transformer';
 import {
   IsBoolean,
   IsEmail,
@@ -8,43 +8,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { ERole, ETeamRole, ETeamType } from '@/common/enums';
-
-export class UserCurrentTeamResponseDto {
-  @ApiProperty({ type: 'number' })
-  @Expose()
-  @IsNumber()
-  id: number;
-
-  @ApiProperty({ type: 'string' })
-  @Expose()
-  @IsString()
-  name: string;
-
-  @ApiProperty({ type: 'string' })
-  @Expose()
-  @IsString()
-  inviteCode: string;
-
-  @ApiProperty({ type: 'string' })
-  @Expose()
-  @IsString()
-  logoUrl?: string;
-
-  @ApiProperty({ type: 'string' })
-  @Expose()
-  @IsString()
-  slug: string;
-
-  @ApiProperty({ enum: ETeamType, example: ETeamType.PERSONAL })
-  @Expose()
-  @IsEnum(ETeamType)
-  type: ETeamType;
-  @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER })
-  @Expose()
-  @IsEnum(ETeamRole)
-  teamRole: ETeamRole;
-}
+import { ERole } from '@/common/guard/constants/role.constant';
 
 export class UserResponseDto {
   @ApiProperty({ example: 1 })
@@ -68,7 +32,7 @@ export class UserResponseDto {
   @IsOptional()
   avatar?: string;
 
-  @ApiProperty({ enum: ERole, example: ERole.MEMBER })
+  @ApiProperty({ enum: ERole, example: ERole.USER })
   @Expose()
   @IsEnum(ERole)
   role: ERole;
@@ -77,21 +41,4 @@ export class UserResponseDto {
   @Expose()
   @IsBoolean()
   isVerified: boolean;
-
-  @ApiProperty({ enum: ETeamRole, example: ETeamRole.OWNER, required: false })
-  @Expose()
-  @IsOptional()
-  teamRole?: ETeamRole;
-
-  @ApiProperty({ example: 1, required: false })
-  @Expose()
-  @IsNumber()
-  @IsOptional()
-  currentTeamId?: number;
-
-  @ApiProperty({ type: () => UserCurrentTeamResponseDto, required: false })
-  @Expose()
-  @Type(() => UserCurrentTeamResponseDto)
-  @IsOptional()
-  currentTeam?: UserCurrentTeamResponseDto;
 }

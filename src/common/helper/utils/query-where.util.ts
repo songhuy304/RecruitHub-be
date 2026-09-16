@@ -1,5 +1,5 @@
 import { FindOperator, WhereExpressionBuilder } from 'typeorm';
-import { uniqueQueryParam } from './query-param.util';
+import { uniqueQueryParam } from '@/common/helper/utils';
 
 export function isRelationWhereValue(
   value: unknown,

@@ -1,7 +1,4 @@
-import {
-  applyScalarWhere,
-  isRelationWhereValue,
-} from '@/common/helper/utils/query-where.util';
+import { applyScalarWhere, isRelationWhereValue } from '@/common/helper/utils';
 import {
   EntityMetadata,
   FindOptionsRelations,

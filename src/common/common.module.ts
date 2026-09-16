@@ -6,9 +6,9 @@ import configs from '@/common/configs';
 import { RequestModule } from '@/common/request/request.module';
 import { HelperModule } from './helper/helper.module';
 import { GuardModule } from './guard/guard.module';
-import { CacheModule } from './cache/cache.module';
 import { UploadModule } from './upload/upload.module';
 import { BullMqModule } from './bullmq/bullmq.module';
+import { CacheModule } from './cache/cache.module';
 
 @Module({
   imports: [

@@ -32,7 +32,7 @@ $ npm install
 
 $ npm run migration:generate --name=update_table
 
-$ npm run migration:run --name=update_table
+$ npm run migration:run
 
 npm run seed
 ```

@@ -1,9 +1,8 @@
-import { ERole } from '@/common/enums';
+import { ERole } from '@/common/guard/constants/role.constant';
 
 export interface IAuthUser {
   userId: number;
   role: ERole;
-  teamId: number;
 }
 
 export interface IRequest {

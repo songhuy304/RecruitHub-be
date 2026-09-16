@@ -1,6 +1,6 @@
 import { ApiEndpoint } from '@/common/doc/decorators/doc.api-endpoint.decorator';
 import { AuthUser, PublicRoute } from '@/common/guard/decorator';
-import { JwtRefreshGuard } from '@/common/guard/jwt.refresh.guard';
+import { JwtRefreshGuard } from '@/common/guard/providers/jwt.refresh.guard';
 import { IAuthUser } from '@/common/request/interfaces';
 import { ApiGenericResponseDto, ApiResponseDto } from '@/common/response';
 import { Body, Controller, Delete, Post, UseGuards } from '@nestjs/common';
@@ -18,7 +18,7 @@ import { AuthService } from '../services/auth.service';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthPublicController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @PublicRoute()
   @Post('/login')

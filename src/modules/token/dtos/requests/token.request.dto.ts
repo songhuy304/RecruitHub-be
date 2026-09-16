@@ -1,4 +1,3 @@
-import { ETOKEN_TYPE } from '@/common/enums';
 import {
   IsDate,
   IsEnum,
@@ -22,8 +21,8 @@ export class CreateTokenDto {
   @Type(() => Date)
   expiresAt: Date;
 
-  @IsEnum(ETOKEN_TYPE)
-  type: ETOKEN_TYPE;
+  @IsString()
+  type: string;
 }
 
 export class GetTokenDto {
@@ -31,8 +30,8 @@ export class GetTokenDto {
   @IsNotEmpty()
   token: string;
 
-  @IsEnum(ETOKEN_TYPE)
-  type: ETOKEN_TYPE;
+  @IsString()
+  type: string;
 }
 
 export class VerifyTokenDto extends GetTokenDto {}

@@ -1,5 +1,5 @@
 import { REGEX_PASSWORD } from '@/common/constants';
-import { UserEntity } from '@/common/entities/user.entity';
+import { UserEntity } from '@/common/database/entities/user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsNotEmpty,

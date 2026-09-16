@@ -3,7 +3,7 @@ import { NotificationRepositoryImpl } from '../repositories/notification.reposit
 import { ApiResponseDto, PaginatedResponseDto } from '@/common/response';
 import { NotificationRequestDto } from '../dtos/requests/notification.get';
 import { IAuthUser } from '@/common/request/interfaces';
-import { SortOrder } from '@/common/enums';
+import { SortOrder } from '@/common/helper/enums/query.enum';
 import { NotificationMapper } from '../mappers/notification.mapper';
 import { NotificationResponseDto } from '../dtos/responses/notification.get.response';
 import {

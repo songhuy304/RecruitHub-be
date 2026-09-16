@@ -3,7 +3,7 @@ import { Params, PinoLogger } from 'nestjs-pino';
 import { IncomingMessage } from 'http';
 import crypto from 'crypto';
 import type { Request, Response } from 'express';
-import { APP_ENVIRONMENT } from '@/common/enums';
+import { APP_ENVIRONMENT } from '@/common/configs/app.config';
 
 /**
  * Creates Pino logger configuration for NestJS application

@@ -2,7 +2,7 @@ import { DatabaseService } from './services/database.service';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ALL_ENTITIES } from '../entities';
+import { ALL_ENTITIES } from './entities';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { ALL_ENTITIES } from '../entities';
         autoLoadEntities: true,
         synchronize: false,
         ssl: { rejectUnauthorized: false },
-        migrations: [__dirname + '/../../migrations/*{.ts,.js}'],
+        migrations: [__dirname + '/migrations/*{.ts,.js}'],
         migrationsRun: false,
         logging: ['error', 'warn'],
         extra: {

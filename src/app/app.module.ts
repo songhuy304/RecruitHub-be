@@ -3,22 +3,16 @@ import { TerminusModule } from '@nestjs/terminus';
 import { HealthController } from '@/app/health.controller';
 import { CommonModule } from '@/common/common.module';
 import { AuthModule } from '@/modules/auth/auth.module';
-import { TeamModule } from '@/modules/team/team.module';
 import { WebsocketModule } from '@/modules/websocket/websocket.module';
 import { NotificationModule } from '@/modules/notifications/notification.module';
-import { MetadataModule } from '@/modules/metadata/metadata.module';
-import { JobModule } from '@/modules/jobs/job.module';
 
 @Module({
   imports: [
     TerminusModule,
     CommonModule,
     AuthModule,
-    TeamModule,
     WebsocketModule,
     NotificationModule,
-    MetadataModule,
-    JobModule,
   ],
   controllers: [HealthController],
 })

@@ -4,7 +4,7 @@ import {
   FilterRule,
 } from '@/common/helper/interfaces/helper-query.interface';
 import { Brackets, WhereExpressionBuilder } from 'typeorm';
-import { uniqueQueryParam } from './query-param.util';
+import { uniqueQueryParam } from '@/common/helper/utils';
 
 const OPS_REQUIRE_VALUE: FilterOperator[] = [
   'eq',

@@ -1,4 +1,4 @@
-import { SortOrder } from '@/common/enums';
+import { SortOrder } from '@/common/helper/enums';
 import {
   FindOptionsRelations,
   FindOptionsSelect,
@@ -42,7 +42,7 @@ export type FilterInput = {
 
 export interface QueryOptions<T extends ObjectLiteral> {
   /**
-   * Hard conditions — always applied as AND (e.g. teamId, ownerId).
+   * Hard conditions — always applied as AND (e.g. ownerId).
    */
   where?: FindOptionsWhere<T> | FindOptionsWhere<T>[];
 

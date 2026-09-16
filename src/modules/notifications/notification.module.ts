@@ -4,7 +4,7 @@ import { WebsocketModule } from '../websocket/websocket.module';
 import { NotificationSenderService } from './services/notification-sender.service';
 import { NotificationService } from './services/notification.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { NotificationEntity } from '@/common/entities/notification.entity';
+import { NotificationEntity } from '@/common/database/entities/notification.entity';
 import { NotificationRepositoryImpl } from './repositories/notification.repository';
 import { NotificationController } from './controllers/notification.controller';
 import { BullModule } from '@nestjs/bullmq';

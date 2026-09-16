@@ -1,4 +1,4 @@
-import { EAuthProvider } from '@/common/enums';
+import { EAuthProvider } from '../enums/provider.enum';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';

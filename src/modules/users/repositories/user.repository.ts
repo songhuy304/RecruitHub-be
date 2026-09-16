@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository as TypeOrmRepository } from 'typeorm';
-import { UserEntity, TeamMemberEntity } from '@/common/entities';
+import { UserEntity } from '@/common/database/entities';
 import { HelperQueryService } from '@/common/helper/services/helper.query.service';
 import { IUserRepository } from '../interfaces/user.repository.interface';
-import { EAuthProvider } from '@/common/enums';
+import { EAuthProvider } from '@/modules/auth/enums/provider.enum';
 
 @Injectable()
 export class UserRepositoryImpl extends IUserRepository {
@@ -34,29 +34,11 @@ export class UserRepositoryImpl extends IUserRepository {
     });
   }
 
-  async findByIdWithCurrentTeam(id: number): Promise<UserEntity | null> {
-    return this.repo.findOne({
-      where: { id },
-      relations: ['teamMembers', 'teamMembers.team'],
-    });
-  }
-
-  async existsTeam(teamId: number): Promise<boolean> {
-    return this.repo.manager.exists(TeamMemberEntity, { where: { teamId } });
-  }
-
   public async upsertUserRefreshToken(
     userId: number,
     refreshToken: string | null,
   ) {
     const hash = refreshToken ? refreshToken : null;
     await this.repo.update(userId, { refreshToken: hash });
-  }
-
-  public async updateCurrentTeam(
-    userId: number,
-    teamId: number | null,
-  ): Promise<void> {
-    await this.repo.update(userId, { currentTeamId: teamId });
   }
 }

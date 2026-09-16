@@ -1,4 +1,4 @@
-import { TokenEntity } from '@/common/entities';
+import { TokenEntity } from '@/common/database/entities';
 import { HelperModule } from '@/common/helper/helper.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';

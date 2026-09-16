@@ -6,8 +6,7 @@ import {
 } from '../dtos/requests/token.request.dto';
 import { ERROR_AUTH } from '@/common/constants';
 import { BadRequestException } from '@/common/filters/exception';
-import { ETOKEN_TYPE } from '@/common/enums';
-import { TokenEntity } from '@/common/entities';
+import { TokenEntity } from '@/common/database/entities';
 
 @Injectable()
 export class TokenService {
@@ -53,9 +52,5 @@ export class TokenService {
 
   async revoke(id: number): Promise<void> {
     await this.tokenRepository.remove(id);
-  }
-
-  async revokeAllByUser(userId: number, type: ETOKEN_TYPE): Promise<void> {
-    await this.tokenRepository.revokeAllByUser(userId, type);
   }
 }

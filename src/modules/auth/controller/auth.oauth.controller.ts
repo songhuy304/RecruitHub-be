@@ -9,7 +9,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
-import { GithubAuthGuard, GoogleAuthGuard } from '@/common/guard/oauth.guard';
+import {
+  GithubAuthGuard,
+  GoogleAuthGuard,
+} from '@/common/guard/providers/oauth.guard';
 import { PublicRoute } from '@/common/guard/decorator';
 import { UserOauthDto, VerifyOauthDto } from '../dtos/request';
 import { Request, Response } from 'express';

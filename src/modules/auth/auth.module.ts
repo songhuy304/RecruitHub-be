@@ -1,10 +1,7 @@
-import { DatabaseModule } from '@/common/database/database.module';
-import { CacheModule } from '@/common/cache/cache.module';
 import { HelperModule } from '@/common/helper/helper.module';
 import { JwtAccessStrategy } from '@/modules/auth/providers/access-jwt.strategy';
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
-import { TeamModule } from '../team/team.module';
 import { TokenModule } from '../token/token.module';
 import { UserModule } from '../users/user.module';
 import { OauthController } from './controller/auth.oauth.controller';
@@ -16,16 +13,7 @@ import { AuthMailService } from './services/auth.mail.service';
 import { AuthService } from './services/auth.service';
 
 @Module({
-  imports: [
-    HelperModule,
-    UserModule,
-    TokenModule,
-    TeamModule,
-    PassportModule,
-    DatabaseModule,
-    CacheModule,
-    TokenModule,
-  ],
+  imports: [HelperModule, UserModule, TokenModule, PassportModule],
   controllers: [AuthPublicController, OauthController],
   providers: [
     JwtAccessStrategy,
@@ -35,11 +23,6 @@ import { AuthService } from './services/auth.service';
     AuthService,
     AuthMailService,
   ],
-  exports: [
-    JwtAccessStrategy,
-    JwtRefreshStrategy,
-    GoogleStrategy,
-    GithubStrategy,
-  ],
+  exports: [AuthService],
 })
 export class AuthModule {}

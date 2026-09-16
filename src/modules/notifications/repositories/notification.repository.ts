@@ -1,5 +1,5 @@
 import { BaseRepository } from '@/common/core';
-import { NotificationEntity } from '@/common/entities/notification.entity';
+import { NotificationEntity } from '@/common/database/entities/notification.entity';
 import { HelperQueryService } from '@/common/helper/services/helper.query.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +14,4 @@ export class NotificationRepositoryImpl extends BaseRepository<NotificationEntit
   ) {
     super(repo, helperQuery);
   }
-
-
 }
