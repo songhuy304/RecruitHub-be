@@ -130,7 +130,7 @@ export class ChannelsController {
     }
   }
 
-  @Delete('/:id')
+  @Delete('/:id/disconnect')
   @ApiBearerAuth('accessToken')
   @ApiEndpoint({
     summary: 'Disconnect a channel connection',
@@ -142,6 +142,20 @@ export class ChannelsController {
     @Param('id', ParseIntPipe) id: number,
   ): Promise<ApiGenericResponseDto> {
     return this.channelService.disconnect(authUser.userId, id);
+  }
+
+  @Delete('/:id')
+  @ApiBearerAuth('accessToken')
+  @ApiEndpoint({
+    summary: 'Delete a channel connection',
+    httpStatus: HttpStatus.OK,
+    messageKey: 'channel.deleted',
+  })
+  async remove(
+    @AuthUser() authUser: IAuthUser,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<ApiGenericResponseDto> {
+    return this.channelService.remove(authUser.userId, id);
   }
 
   private readCookie(req: Request, name: string): string | undefined {

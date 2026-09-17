@@ -132,34 +132,28 @@ export class ChannelService {
     userId: number,
     connectionId: number,
   ): Promise<ApiGenericResponseDto> {
-    const connection = await this.channelConnectionRepository.findByUserAndId(
-      userId,
-      connectionId,
-    );
-
-    if (!connection) {
-      throw new NotFoundException(ERROR_CHANNEL.NOT_CONNECTED);
-    }
+    const connection = await this.getOwnedConnection(userId, connectionId);
 
     if (connection.connected) {
-      const adapter = this.getAdapter(connection.platform);
-      const tokenToRevoke = connection.refreshToken ?? connection.accessToken;
-      try {
-        const decrypted = await this.decryptToken(tokenToRevoke);
-        await adapter.revokeToken(decrypted);
-      } catch (error) {
-        this.logger.warn(
-          `Failed to revoke token for connection ${connection.id}`,
-          error,
-        );
-      }
-
+      await this.revokeIfConnected(connection);
       await this.channelConnectionRepository.update(connection.id, {
         connected: false,
       });
     }
 
     return ApiGenericResponseDto.success('Disconnected channel');
+  }
+
+  async remove(
+    userId: number,
+    connectionId: number,
+  ): Promise<ApiGenericResponseDto> {
+    const connection = await this.getOwnedConnection(userId, connectionId);
+
+    await this.revokeIfConnected(connection);
+    await this.channelConnectionRepository.remove(connection.id);
+
+    return ApiGenericResponseDto.success('Deleted channel');
   }
 
   async getValidAccessToken(connectionId: number): Promise<string> {
@@ -322,6 +316,42 @@ export class ChannelService {
       externalId: profile.externalId,
       ...payload,
     });
+  }
+
+  private async getOwnedConnection(
+    userId: number,
+    connectionId: number,
+  ): Promise<ChannelConnectionEntity> {
+    const connection = await this.channelConnectionRepository.findByUserAndId(
+      userId,
+      connectionId,
+    );
+
+    if (!connection) {
+      throw new NotFoundException(ERROR_CHANNEL.NOT_CONNECTED);
+    }
+
+    return connection;
+  }
+
+  private async revokeIfConnected(
+    connection: ChannelConnectionEntity,
+  ): Promise<void> {
+    if (!connection.connected) {
+      return;
+    }
+
+    const adapter = this.getAdapter(connection.platform);
+    const tokenToRevoke = connection.refreshToken ?? connection.accessToken;
+    try {
+      const decrypted = await this.decryptToken(tokenToRevoke);
+      await adapter.revokeToken(decrypted);
+    } catch (error) {
+      this.logger.warn(
+        `Failed to revoke token for connection ${connection.id}`,
+        error,
+      );
+    }
   }
 
   private getAdapter(platform: EChannelPlatform): ChannelOauthAdapter {
