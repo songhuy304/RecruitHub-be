@@ -88,7 +88,7 @@ export class ChannelService {
     status: 'success' | 'error',
     reason?: string,
   ): string {
-    const url = new URL('/channels/connected', this.frontendUrl);
+    const url = new URL('/channels', this.frontendUrl);
     url.searchParams.set('platform', platform);
     url.searchParams.set('status', status);
     if (reason) {
