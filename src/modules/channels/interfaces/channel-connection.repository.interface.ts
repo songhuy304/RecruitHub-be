@@ -8,6 +8,10 @@ export abstract class IChannelConnectionRepository extends BaseRepository<Channe
     userId: number,
     id: number,
   ): Promise<ChannelConnectionEntity | null>;
+  abstract findByUserAndIds(
+    userId: number,
+    ids: number[],
+  ): Promise<ChannelConnectionEntity[]>;
   abstract findByPlatformAndExternalId(
     platform: EChannelPlatform,
     externalId: string,

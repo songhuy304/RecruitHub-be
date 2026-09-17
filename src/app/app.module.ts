@@ -6,6 +6,7 @@ import { AuthModule } from '@/modules/auth/auth.module';
 import { WebsocketModule } from '@/modules/websocket/websocket.module';
 import { NotificationModule } from '@/modules/notifications/notification.module';
 import { ChannelsModule } from '@/modules/channels/channels.module';
+import { PostsModule } from '@/modules/posts/posts.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ChannelsModule } from '@/modules/channels/channels.module';
     WebsocketModule,
     NotificationModule,
     ChannelsModule,
+    PostsModule,
   ],
   controllers: [HealthController],
 })

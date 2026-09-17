@@ -23,3 +23,13 @@ export const ERROR_CHANNEL = {
   NOT_CONFIGURED: 'error.channel.not-configured',
   PLATFORM_UNSUPPORTED: 'error.channel.platform-unsupported',
 };
+
+export const ERROR_POST = {
+  NOT_FOUND: 'error.post.not-found',
+  CHANNELS_REQUIRED: 'error.post.channels-required',
+  MEDIA_FAILED: 'error.post.media-failed',
+  SCHEDULE_INVALID: 'error.post.schedule-invalid',
+  PLATFORM_UNSUPPORTED: 'error.post.platform-unsupported',
+  PUBLISH_FAILED: 'error.post.publish-failed',
+  NO_FAILED_TARGETS: 'error.post.no-failed-targets',
+};

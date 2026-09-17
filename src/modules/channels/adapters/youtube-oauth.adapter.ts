@@ -20,6 +20,7 @@ const YOUTUBE_OAUTH_SCOPES = [
   'email',
   'profile',
   'https://www.googleapis.com/auth/youtube.readonly',
+  'https://www.googleapis.com/auth/youtube.upload',
 ];
 
 interface GoogleTokenResponse {

@@ -15,7 +15,11 @@ const TIKTOK_AUTH_URL = 'https://www.tiktok.com/v2/auth/authorize/';
 const TIKTOK_TOKEN_URL = 'https://open.tiktokapis.com/v2/oauth/token/';
 const TIKTOK_REVOKE_URL = 'https://open.tiktokapis.com/v2/oauth/revoke/';
 const TIKTOK_USERINFO_URL = 'https://open.tiktokapis.com/v2/user/info/';
-const TIKTOK_OAUTH_SCOPES = ['user.info.basic', 'user.info.profile'];
+const TIKTOK_OAUTH_SCOPES = [
+  'user.info.basic',
+  'user.info.profile',
+  'video.publish',
+];
 const TIKTOK_USER_FIELDS = [
   'open_id',
   'union_id',

@@ -128,6 +128,31 @@ export class ChannelService {
     return ApiResponseDto.success(ChannelConnectionMapper.toList(connections));
   }
 
+  async getOwnedConnectedChannels(
+    userId: number,
+    ids: number[],
+  ): Promise<ChannelConnectionEntity[]> {
+    const uniqueIds = [...new Set(ids)];
+    if (!uniqueIds.length) {
+      throw new BadRequestException(ERROR_CHANNEL.NOT_CONNECTED);
+    }
+
+    const connections =
+      await this.channelConnectionRepository.findByUserAndIds(
+        userId,
+        uniqueIds,
+      );
+
+    if (
+      connections.length !== uniqueIds.length ||
+      connections.some((connection) => !connection.connected)
+    ) {
+      throw new BadRequestException(ERROR_CHANNEL.NOT_CONNECTED);
+    }
+
+    return connections;
+  }
+
   async disconnect(
     userId: number,
     connectionId: number,

@@ -2,7 +2,7 @@ import { ChannelConnectionEntity } from '@/common/database/entities';
 import { HelperQueryService } from '@/common/helper/services/helper.query.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository as TypeOrmRepository } from 'typeorm';
+import { In, Repository as TypeOrmRepository } from 'typeorm';
 import { EChannelPlatform } from '../enums/channel-platform.enum';
 import { IChannelConnectionRepository } from '../interfaces/channel-connection.repository.interface';
 
@@ -28,6 +28,19 @@ export class ChannelConnectionRepositoryImpl extends IChannelConnectionRepositor
     id: number,
   ): Promise<ChannelConnectionEntity | null> {
     return this.repo.findOne({ where: { userId, id } });
+  }
+
+  async findByUserAndIds(
+    userId: number,
+    ids: number[],
+  ): Promise<ChannelConnectionEntity[]> {
+    if (!ids.length) {
+      return [];
+    }
+
+    return this.repo.find({
+      where: { userId, id: In(ids) },
+    });
   }
 
   async findByPlatformAndExternalId(
