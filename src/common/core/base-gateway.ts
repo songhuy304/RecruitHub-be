@@ -1,49 +1,45 @@
 import { Logger } from '@nestjs/common';
 import {
-    OnGatewayConnection,
-    OnGatewayDisconnect,
-    OnGatewayInit,
-    WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { HelperEncryptionService } from '../helper/services/helper.encryption.service';
 export abstract class BaseGateway
-    implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  @WebSocketServer()
+  server: Server;
+  protected readonly logger = new Logger(this.constructor.name);
+  constructor(protected readonly jwt: HelperEncryptionService) {}
 
-    @WebSocketServer()
-    server: Server;
+  afterInit(server: Server) {
+    server.use(async (socket, next) => {
+      try {
+        // const token = socket.handshake.auth?.token;
+        // const token = socket.handshake.auth?.token;
+        const token = socket.handshake.auth?.token;
 
-    protected readonly logger = new Logger(this.constructor.name);
+        if (!token) {
+          return next(new Error('Unauthorized'));
+        }
 
-    constructor(
-        protected readonly jwt: HelperEncryptionService,
-    ) { }
+        socket.data.user = await this.jwt.verifyToken(token);
 
-    afterInit(server: Server) {
-        server.use(async (socket, next) => {
-            try {
-                // const token = socket.handshake.auth?.token;
-                // const token = socket.handshake.auth?.token;
-                const token = socket.handshake.auth?.token;
+        next();
+      } catch {
+        next(new Error('Unauthorized'));
+      }
+    });
+  }
 
-                if (!token) {
-                    return next(new Error("Unauthorized"));
-                }
+  handleConnection(client: Socket) {
+    this.logger.log(`Connected: ${client.id}`);
+  }
 
-                socket.data.user = await this.jwt.verifyToken(token);
-
-                next();
-            } catch {
-                next(new Error("Unauthorized"));
-            }
-        });
-    }
-
-    handleConnection(client: Socket) {
-        this.logger.log(`Connected: ${client.id}`);
-    }
-
-    handleDisconnect(client: Socket) {
-        this.logger.log(`Disconnected: ${client.id}`);
-    }
+  handleDisconnect(client: Socket) {
+    this.logger.log(`Disconnected: ${client.id}`);
+  }
 }

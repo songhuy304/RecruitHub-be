@@ -8,6 +8,7 @@ import {
 import { BaseEntity } from './base.entity';
 import { NotificationEntity } from './notification.entity';
 import { TokenEntity } from './token.entity';
+import { ChannelConnectionEntity } from './channel-connection.entity';
 import { ERole } from '../../guard/constants/role.constant';
 import { EAuthProvider } from '@/modules/auth/enums/provider.enum';
 
@@ -50,4 +51,7 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => NotificationEntity, (notification) => notification.user)
   notifications: NotificationEntity[];
+
+  @OneToMany(() => ChannelConnectionEntity, (connection) => connection.user)
+  channelConnections?: ChannelConnectionEntity[];
 }

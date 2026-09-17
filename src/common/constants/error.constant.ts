@@ -14,3 +14,12 @@ export const ERROR_AUTH = {
   TOKEN_MISSING: 'error.auth.token-missing', // không gửi token
   TOKEN_UNAUTHORIZED: 'error.auth.unauthorized', // không đủ quyền / không hợp lệ
 };
+
+export const ERROR_CHANNEL = {
+  NOT_CONNECTED: 'error.channel.not-connected',
+  STATE_INVALID: 'error.channel.state-invalid',
+  TOKEN_FAILED: 'error.channel.token-failed',
+  ACCOUNT_LINKED: 'error.channel.account-linked',
+  NOT_CONFIGURED: 'error.channel.not-configured',
+  PLATFORM_UNSUPPORTED: 'error.channel.platform-unsupported',
+};

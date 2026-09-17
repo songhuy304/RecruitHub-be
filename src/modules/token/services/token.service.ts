@@ -1,12 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TokenRepositoryImpl } from '../repositories/token.repository';
-import {
-  CreateTokenDto,
-  VerifyTokenDto,
-} from '../dtos/requests/token.request.dto';
 import { ERROR_AUTH } from '@/common/constants';
 import { BadRequestException } from '@/common/filters/exception';
 import { TokenEntity } from '@/common/database/entities';
+import { CreateTokenDto, VerifyTokenDto } from '../dtos/token.request.dto';
 
 @Injectable()
 export class TokenService {

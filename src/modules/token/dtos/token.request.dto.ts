@@ -1,12 +1,5 @@
-import {
-  IsDate,
-  IsEnum,
-  IsInt,
-  IsNotEmpty,
-  IsString,
-  Min,
-} from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsDate, IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
 
 export class CreateTokenDto {
   @IsInt()
