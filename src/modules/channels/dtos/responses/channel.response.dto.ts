@@ -39,6 +39,12 @@ export class ChannelConnectionResponseDto {
   @IsString()
   displayName: string;
 
+  @ApiPropertyOptional({ example: '@HuyDangzz' })
+  @Expose()
+  @IsString()
+  @IsOptional()
+  username?: string;
+
   @ApiPropertyOptional({ example: 'channel@gmail.com' })
   @Expose()
   @IsString()

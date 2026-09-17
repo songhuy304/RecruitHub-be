@@ -13,6 +13,7 @@ export class ChannelConnectionMapper {
         platform: connection.platform,
         connected: connection.connected,
         displayName: connection.displayName,
+        username: connection.metadata?.username,
         email: connection.email,
         avatarUrl: connection.avatarUrl,
         externalId: connection.externalId,

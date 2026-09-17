@@ -42,6 +42,7 @@ interface YoutubeChannelListResponse {
     id: string;
     snippet?: {
       title?: string;
+      customUrl?: string;
       thumbnails?: {
         default?: { url?: string };
         high?: { url?: string };
@@ -128,6 +129,7 @@ export class YoutubeOauthAdapter extends ChannelOauthAdapter {
       metadata: {
         googleId: googleUser.sub,
         channelId: channel.channelId,
+        username: channel.username,
       },
     };
   }
@@ -176,6 +178,7 @@ export class YoutubeOauthAdapter extends ChannelOauthAdapter {
   private async getPrimaryChannel(accessToken: string): Promise<{
     channelId?: string;
     title?: string;
+    username?: string;
     thumbnail?: string;
   }> {
     try {
@@ -195,6 +198,7 @@ export class YoutubeOauthAdapter extends ChannelOauthAdapter {
       return {
         channelId: channel.id,
         title: channel.snippet?.title,
+        username: this.toChannelUsername(channel.snippet?.customUrl),
         thumbnail:
           channel.snippet?.thumbnails?.high?.url ??
           channel.snippet?.thumbnails?.default?.url,
@@ -206,6 +210,19 @@ export class YoutubeOauthAdapter extends ChannelOauthAdapter {
       );
       return {};
     }
+  }
+
+  private toChannelUsername(customUrl?: string): string | undefined {
+    if (!customUrl) {
+      return undefined;
+    }
+
+    const handle = customUrl.split('/').filter(Boolean).pop();
+    if (!handle) {
+      return undefined;
+    }
+
+    return handle.startsWith('@') ? handle : `@${handle}`;
   }
 
   private toTokenResponse(tokens: GoogleTokenResponse): ChannelTokenResponse {
